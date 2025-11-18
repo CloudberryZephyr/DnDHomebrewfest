@@ -1,6 +1,7 @@
 package com.example.dndhomebrewfest.apis
 
 import com.example.dndhomebrewfest.viewmodels.DnDCategory
+import com.example.dndhomebrewfest.viewmodels.Object
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -12,6 +13,9 @@ interface DndAPIService {
 
     @GET("/api/2014/{category}")
     suspend fun getCategory(@Path("category") category : String) : DnDCategory
+
+    @GET("{path}")
+    suspend fun getObjectInfo(@Path("path") path : String) : Object
 }
 
 object DnDAPI {
