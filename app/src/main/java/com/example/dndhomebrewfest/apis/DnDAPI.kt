@@ -1,5 +1,7 @@
 package com.example.dndhomebrewfest.apis
 
+import com.example.dndhomebrewfest.viewmodels.AbilityScore
+import com.example.dndhomebrewfest.viewmodels.Category
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -8,6 +10,12 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface DndAPIService {
+
+    @GET("/api/2014/{category}")
+    suspend fun getCategory(@Path("category") category : String) : Category
+
+    @GET("/api/2014/ability-scores/{score}")
+    suspend fun getAbilityScore(@Path("score") score : String) : AbilityScore
 
 //    @GET("{path}")
 //    suspend fun getObjectInfo(@Path("path") path : String) :

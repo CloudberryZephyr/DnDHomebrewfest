@@ -76,7 +76,7 @@ data class AbilityScore(
     val index: String,
     val name: String,
     val full_name: String,
-    val desc: String,
+    val desc: List<String>,
     val skills: List<ObjectReference>,
     val url: String,
     val updated_at: String
@@ -505,12 +505,18 @@ data class WeaponProperty(
     val url: String,
     val updated_at: String
 )
-//
-//sealed interface ObjectUIState {
-//    object Loading : ObjectUIState
-//    object Error : ObjectUIState
-//    class Success(val objectInfo : Object) : ObjectUIState
-//}
+
+@Serializable
+data class Category(
+    val count: Int,
+    val results : List<ObjectReference>
+)
+
+sealed interface CategoryUIState {
+    object Loading : CategoryUIState
+    object Error : CategoryUIState
+    class Success(val category : Category) : CategoryUIState
+}
 
 class DnDViewModel : ViewModel() {
 
@@ -541,30 +547,30 @@ class DnDViewModel : ViewModel() {
         "weapon-properties"
     )
 
-    val abilityScoreObjects : List<AbilityScore> = mutableListOf()
-    val alignmentObjects : List<Alignment> = mutableListOf()
-    val backgroundObjects : List<Background> = mutableListOf()
-    val classObjects : List<Class> = mutableListOf()
-    val conditionObjects : List<Condition> = mutableListOf()
-    val damageTypeObjects : List<DamageType> = mutableListOf()
-    val equipmentObjects : List<Equipment> = mutableListOf()
-    val equipmentCategoryObjects : List<EquipmentCategory> = mutableListOf()
-    val featObjects : List<Feat> = mutableListOf()
-    val featureObjects : List<Feature> = mutableListOf()
-    val languageObjects : List<Language> = mutableListOf()
-    val magicItemObjects : List<MagicItem> = mutableListOf()
-    val magicSchoolObjects : List<MagicSchool> = mutableListOf()
-    val monsterObjects : List<Monster> = mutableListOf()
-    val proficiencyObjects : List<Proficiency> = mutableListOf()
-    val raceObjects : List<Race> = mutableListOf()
-    val ruleSectionObejcts : List<RuleSection> = mutableListOf()
-    val ruleObjects : List<Rule> = mutableListOf()
-    val skillObjects : List<Skill> = mutableListOf()
-    val spellObjects : List<Spell> = mutableListOf()
-    val subclassObjects : List<Subclass> = mutableListOf()
-    val subraceObjects : List<Subrace> = mutableListOf()
-    val traitObjects : List<Trait> = mutableListOf()
-    val weaponPropertyOpjects : List<WeaponProperty> = mutableListOf()
+    val abilityScoreObjects : MutableList<AbilityScore> = mutableListOf()
+    val alignmentObjects : MutableList<Alignment> = mutableListOf()
+    val backgroundObjects : MutableList<Background> = mutableListOf()
+    val classObjects : MutableList<Class> = mutableListOf()
+    val conditionObjects : MutableList<Condition> = mutableListOf()
+    val damageTypeObjects : MutableList<DamageType> = mutableListOf()
+    val equipmentObjects : MutableList<Equipment> = mutableListOf()
+    val equipmentCategoryObjects : MutableList<EquipmentCategory> = mutableListOf()
+    val featObjects : MutableList<Feat> = mutableListOf()
+    val featureObjects : MutableList<Feature> = mutableListOf()
+    val languageObjects : MutableList<Language> = mutableListOf()
+    val magicItemObjects : MutableList<MagicItem> = mutableListOf()
+    val magicSchoolObjects : MutableList<MagicSchool> = mutableListOf()
+    val monsterObjects : MutableList<Monster> = mutableListOf()
+    val proficiencyObjects : MutableList<Proficiency> = mutableListOf()
+    val raceObjects : MutableList<Race> = mutableListOf()
+    val ruleSectionObjects : MutableList<RuleSection> = mutableListOf()
+    val ruleObjects : MutableList<Rule> = mutableListOf()
+    val skillObjects : MutableList<Skill> = mutableListOf()
+    val spellObjects : MutableList<Spell> = mutableListOf()
+    val subclassObjects : MutableList<Subclass> = mutableListOf()
+    val subraceObjects : MutableList<Subrace> = mutableListOf()
+    val traitObjects : MutableList<Trait> = mutableListOf()
+    val weaponPropertyObjects : MutableList<WeaponProperty> = mutableListOf()
 
 //    var dndUIState : DnDUIState by mutableStateOf(DnDUIState.Loading)
 //    var dndUIStates : MutableMap<String, DnDUIState> = mutableMapOf()
@@ -572,25 +578,28 @@ class DnDViewModel : ViewModel() {
 //    var objectUIState : ObjectUIState by mutableStateOf(ObjectUIState.Loading)
 
     init {
-
+        getAbilityScores()
     }
 
-//    fun getCategories() {
-//        for (category : String in categoryList) {
-//            viewModelScope.launch {
-//                try {
-//                    val catInfo = DnDAPI.retrofitService.getCategory(category)
-//                    dndUIState = DnDUIState.Success(catInfo)
-//                    dndUIStates[category] = dndUIState
-//                } catch (e: Throwable) {
-//                    Log.e("MyTag", "error is ${e.message}")
-//                    dndUIState = DnDUIState.Error
-//                }
-//            }
-//        }
-//    }
+    fun getAbilityScores() {
+        var categoryUIState = CategoryUIState.Loading
+        viewModelScope.launch {
+            try {
+                val catInfo = DnDAPI.retrofitService.getCategory("ability-scores")
+                for (result in catInfo.results) {
+                    try {
+                        val scoreInfo = DnDAPI.retrofitService.getAbilityScore(result.index)
+                        abilityScoreObjects.add(scoreInfo)
+                        Log.d("MyTAG", "Added ${result.url}")
+                    } catch (e: Throwable) {
+                        Log.d("MyTAG", "error with Ability Score ${result.name}: ${e.message}")
+                    }
+                }
 
-
-
+            } catch (e: Throwable) {
+                Log.d("MyTAG", "error with Ability Score: ${e.message}")
+            }
+        }
+    }
 
 }
