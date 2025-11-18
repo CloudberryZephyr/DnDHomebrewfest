@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class MarioRaceViewModel: ViewModel() {
+class HBFViewModel: ViewModel() {
     private val _uiState = MutableStateFlow(HBFUiState())
 
     val uiState: StateFlow<HBFUiState> = _uiState.asStateFlow()
