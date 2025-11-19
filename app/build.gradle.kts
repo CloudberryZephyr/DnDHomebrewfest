@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
-
 }
 
 android {
@@ -63,7 +62,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     // Coil3 for AsyncImage
     implementation("io.coil-kt.coil3:coil-compose:3.0.0")
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4") // Only available on Android/JVM.
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
 
 
 
