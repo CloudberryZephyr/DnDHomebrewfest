@@ -48,9 +48,16 @@ sealed interface Option {
         val damage_type : ObjectReference? = null,
         val damage_dice : String? = null,
         val notes: String? = null,
-        val bonus : Int? = null
+        val bonus : Int? = null,
+        val prerequisites : List<ProficiencyType>? = null
     ) : Option
 }
+
+@Serializable
+data class ProficiencyType(
+    val type : String,
+    val proficiency: ObjectReference
+)
 
 // Custom serializer specifically for the OptionString case
 object OptionStringSerializer : KSerializer<OptionString> {
@@ -113,7 +120,8 @@ data class Prerequisite(
 data class MultiClassing(
     val prerequisites : List<Prerequisite>? = null,
     val prerequisite_options : Choice? = null,
-    val proficiencies: List<ObjectReference>
+    val proficiencies: List<ObjectReference>,
+    val proficiency_choices : List<Choice>? = null
 )
 
 @Serializable
@@ -176,6 +184,19 @@ data class Background(
 )
 
 @Serializable
+data class SpellInfo(
+    val name : String,
+    val desc : List<String>
+)
+
+@Serializable
+data class ClassSpellcasting(
+    val level :  Int,
+    val spellcasting_ability : ObjectReference,
+    val info : List<SpellInfo>
+)
+
+@Serializable
 data class Class(
     val index: String,
     val name : String,
@@ -187,6 +208,8 @@ data class Class(
     val starting_equipment_options: List<Choice>,
     val class_levels: String,
     val multi_classing: MultiClassing,
+    val spells : String? = null,
+    val spellcasting: ClassSpellcasting? = null,
     val subclasses: List<ObjectReference>,
     val url: String,
     val updated_at: String
