@@ -32,6 +32,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
@@ -107,7 +108,25 @@ fun Homebrewery(navController : NavHostController, modifier: Modifier = Modifier
         navController = navController,
         startDestination = Screens.CharacterView.name
     ) {
-        composable()
+        composable(route = Screens.CharacterView.name) {
+            // Character View
+        }
+
+        composable(route = Screens.CharacterCreation.name) {
+            // Character Creation
+        }
+
+        composable(route = Screens.HomebrewView.name) {
+            // Homebrew View
+        }
+
+        composable(route = Screens.HomebrewCreation.name) {
+            // Homebrew Creation
+        }
+
+        composable(route = Screens.StandardView.name) {
+            // Standard View
+        }
     }
 
     LazyColumn(
