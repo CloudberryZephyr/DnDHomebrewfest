@@ -820,7 +820,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val scoreInfo = DnDAPI.retrofitService.getAbilityScore(result.index)
                         abilityScoreObjects.add(scoreInfo)
-                        Log.i("MyTAG", "Added ${result.url}")
+                        //Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Ability Score ${result.name}: ${e.message}")
                     }
@@ -840,7 +840,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val alignmentInfo = DnDAPI.retrofitService.getAlignment(result.index)
                         alignmentObjects.add(alignmentInfo)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Alignment ${result.name}: ${e.message}")
                     }
@@ -860,7 +860,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getBackground(result.index)
                         backgroundObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Background ${result.name}: ${e.message}")
                     }
@@ -880,7 +880,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getClass(result.index)
                         classObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Class ${result.name}: ${e.message}")
                     }
@@ -900,7 +900,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getCondition(result.index)
                         conditionObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Condition ${result.name}: ${e.message}")
                     }
@@ -920,7 +920,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getDamageType(result.index)
                         damageTypeObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with damage-types ${result.name}: ${e.message}")
                     }
@@ -940,7 +940,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getEquipment(result.index)
                         equipmentObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with equipment ${result.name}: ${e.message}")
                     }
@@ -960,7 +960,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getEquipmentCategory(result.index)
                         equipmentCategoryObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with equipment-categories ${result.name}: ${e.message}")
                     }
@@ -980,7 +980,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getFeat(result.index)
                         featObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with feats ${result.name}: ${e.message}")
                     }
@@ -1000,7 +1000,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getFeature(result.index)
                         featureObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with features ${result.name}: ${e.message}")
                     }
@@ -1020,7 +1020,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getLanguage(result.index)
                         languageObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with languages ${result.name}: ${e.message}")
                     }
@@ -1040,7 +1040,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getMagicItem(result.index)
                         magicItemObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with magic-items ${result.name}: ${e.message}")
                     }
@@ -1060,7 +1060,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getMagicSchool(result.index)
                         magicSchoolObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with magic-schools ${result.name}: ${e.message}")
                     }
@@ -1080,7 +1080,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getMonster(result.index)
                         monsterObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with monsters ${result.name}: ${e.message}")
                     }
@@ -1100,7 +1100,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getProficiency(result.index)
                         proficiencyObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with proficiencies ${result.name}: ${e.message}")
                     }
@@ -1120,7 +1120,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getRace(result.index)
                         raceObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with races ${result.name}: ${e.message}")
                     }
@@ -1140,7 +1140,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getRuleSection(result.index)
                         ruleSectionObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with rule-sections ${result.name}: ${e.message}")
                     }
@@ -1160,7 +1160,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getRule(result.index)
                         ruleObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with rules ${result.name}: ${e.message}")
                     }
@@ -1180,7 +1180,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getSkill(result.index)
                         skillObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with skills ${result.name}: ${e.message}")
                     }
@@ -1200,7 +1200,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getSpell(result.index)
                         spellObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with spells ${result.name}: ${e.message}")
                     }
@@ -1220,7 +1220,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getSubclass(result.index)
                         subclassObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with subclasses ${result.name}: ${e.message}")
                     }
@@ -1240,7 +1240,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getSubrace(result.index)
                         subraceObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with subraces ${result.name}: ${e.message}")
                     }
@@ -1260,7 +1260,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getTrait(result.index)
                         traitObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with traits ${result.name}: ${e.message}")
                     }
@@ -1280,7 +1280,7 @@ class DnDViewModel : ViewModel() {
                     try {
                         val info = DnDAPI.retrofitService.getWeaponProperty(result.index)
                         weaponPropertyObjects.add(info)
-                        Log.i("MyTAG", "Added ${result.url}")
+//                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with weapon-properties ${result.name}: ${e.message}")
                     }
