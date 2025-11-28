@@ -11,18 +11,41 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
 import com.example.dndhomebrewfest.viewmodels.RoomVM
 import com.example.dndhomebrewfest.data.Character
+
+enum class Screens () {
+    CharacterView,
+    CharacterCreation,
+    HomebrewView,
+    HomebrewCreation,
+    StandardView
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,9 +53,20 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DnDHomebrewfestTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
 
-                    Homebrewery()
+                val navController = rememberNavController()
+                val backStackEntry by navController.currentBackStackEntryAsState()
+                val screenName = backStackEntry?.destination?.route
+
+                Scaffold(modifier = Modifier.fillMaxSize(),
+                    topBar = {
+
+                    },
+                    bottomBar = {
+
+                    }) { innerPadding ->
+
+                    Homebrewery(navController)
                 }
             }
         }
@@ -40,12 +74,41 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Homebrewery(modifier: Modifier = Modifier) {
+fun TopBar(modifier: Modifier = Modifier, screenName : String, back : () -> Unit) {
+
+    // back button
+
+    // screen name
+}
+
+
+@Composable
+fun BottomBar(modifier: Modifier = Modifier, screenName : String, navigate : (route : String) -> Unit) {
+    NavigationBar(
+        modifier = modifier
+    ) {
+        // characters
+
+        // homebrew
+
+        // standard
+    }
+}
+
+@Composable
+fun Homebrewery(navController : NavHostController, modifier: Modifier = Modifier) {
     val APIVM : DnDViewModel = viewModel()
 
     val roomVM = RoomVM.getInstance()
 
     val characters = roomVM.characters.collectAsState().value
+
+    NavHost (
+        navController = navController,
+        startDestination = Screens.CharacterView.name
+    ) {
+        composable()
+    }
 
     LazyColumn(
         modifier = modifier.fillMaxSize()
@@ -73,4 +136,3 @@ fun GreetingPreview() {
         Homebrewery()
     }
 }
-
