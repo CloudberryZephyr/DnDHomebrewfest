@@ -46,13 +46,16 @@ import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
 import com.example.dndhomebrewfest.viewmodels.RoomVM
 import com.example.dndhomebrewfest.data.Character
+import com.example.dndhomebrewfest.screens.StandardSearchScreen
+import com.example.dndhomebrewfest.screens.StandardViewScreen
 
 enum class Screens () {
     CharacterView,
     CharacterCreation,
     HomebrewView,
     HomebrewCreation,
-    StandardView
+    StandardView,
+    StandardSearch
 }
 
 class MainActivity : ComponentActivity() {
@@ -127,9 +130,9 @@ fun BottomBar(modifier: Modifier = Modifier, screenName : String, navigate : (ro
 
         // standard
         NavigationBarItem(
-            selected = screenName == Screens.StandardView.name,
+            selected = screenName == Screens.StandardSearch.name,
             onClick = {
-                navigate(Screens.StandardView.name)
+                navigate(Screens.StandardSearch.name)
             },
             icon = {
                 Image(painter = painterResource(R.drawable.book),
@@ -145,11 +148,7 @@ fun BottomBar(modifier: Modifier = Modifier, screenName : String, navigate : (ro
 
 @Composable
 fun Homebrewery(navController : NavHostController, modifier: Modifier = Modifier) {
-    val APIVM : DnDViewModel = viewModel()
-
     val roomVM = RoomVM.getInstance()
-
-    val characters = roomVM.characters.collectAsState().value
 
     NavHost (
         navController = navController,
@@ -173,15 +172,11 @@ fun Homebrewery(navController : NavHostController, modifier: Modifier = Modifier
 
         composable(route = Screens.StandardView.name) {
             // Standard View
+            StandardViewScreen()
         }
-    }
 
-    LazyColumn(
-        modifier = modifier.fillMaxSize()
-    ) {
-        items(characters) {character ->
-            Text("${character.character_id}")
-            dbCard(character)
+        composable(route = Screens.StandardSearch.name) {
+            StandardSearchScreen(navController)
         }
     }
 }

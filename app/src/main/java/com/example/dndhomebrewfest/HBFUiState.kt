@@ -1,5 +1,6 @@
 package com.example.dndhomebrewfest
 
 data class HBFUiState(
-    var placeholder: Int = 0
+    var current_filter : String = "",
+    var current_type : String = ""
 )

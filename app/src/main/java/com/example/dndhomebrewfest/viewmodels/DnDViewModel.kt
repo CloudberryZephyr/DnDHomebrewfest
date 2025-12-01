@@ -732,33 +732,6 @@ sealed interface CategoryUIState {
 
 class DnDViewModel : ViewModel() {
 
-    val categoryList = listOf(
-        "ability-scores",
-        "alignments",
-        "backgrounds",
-        "classes",
-        "conditions",
-        "damage-types",
-        "equipment",
-        "equipment-categories",
-        "feats",
-        "features",
-        "languages",
-        "magic-items",
-        "magic-schools",
-        "monsters",
-        "proficiencies",
-        "races",
-        "rule-sections",
-        "rules",
-        "skills",
-        "spells",
-        "subclasses",
-        "subraces",
-        "traits",
-        "weapon-properties"
-    )
-
     val abilityScoreObjects : MutableList<AbilityScore> = mutableListOf()
     val alignmentObjects : MutableList<Alignment> = mutableListOf()
     val backgroundObjects : MutableList<Background> = mutableListOf()
