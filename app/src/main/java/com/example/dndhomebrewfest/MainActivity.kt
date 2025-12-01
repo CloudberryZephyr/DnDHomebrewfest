@@ -48,6 +48,7 @@ import com.example.dndhomebrewfest.viewmodels.RoomVM
 import com.example.dndhomebrewfest.data.Character
 import com.example.dndhomebrewfest.screens.StandardSearchScreen
 import com.example.dndhomebrewfest.screens.StandardViewScreen
+import com.example.dndhomebrewfest.viewmodels.HBFViewModel
 
 enum class Screens () {
     CharacterView,
@@ -149,6 +150,7 @@ fun BottomBar(modifier: Modifier = Modifier, screenName : String, navigate : (ro
 @Composable
 fun Homebrewery(navController : NavHostController, modifier: Modifier = Modifier) {
     val roomVM = RoomVM.getInstance()
+    val hbfVM : HBFViewModel = viewModel()
 
     NavHost (
         navController = navController,
@@ -172,11 +174,11 @@ fun Homebrewery(navController : NavHostController, modifier: Modifier = Modifier
 
         composable(route = Screens.StandardView.name) {
             // Standard View
-            StandardViewScreen()
+            StandardViewScreen(hbfVM)
         }
 
         composable(route = Screens.StandardSearch.name) {
-            StandardSearchScreen(navController)
+            StandardSearchScreen(navController, hbfVM)
         }
     }
 }

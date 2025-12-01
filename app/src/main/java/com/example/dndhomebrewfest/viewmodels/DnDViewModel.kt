@@ -1,6 +1,9 @@
 package com.example.dndhomebrewfest.viewmodels
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dndhomebrewfest.apis.DnDAPI
@@ -732,10 +735,11 @@ sealed interface CategoryUIState {
 
 class DnDViewModel : ViewModel() {
 
-    val abilityScoreObjects : MutableList<AbilityScore> = mutableListOf()
+    val abilityScoreObjects by mutableStateOf<List<AbilityScore>>(emptyList())
     val alignmentObjects : MutableList<Alignment> = mutableListOf()
     val backgroundObjects : MutableList<Background> = mutableListOf()
-    val classObjects : MutableList<Class> = mutableListOf()
+    var classObjects by mutableStateOf<List<Class>>(emptyList())
+    var isLoading by mutableStateOf(false)
     val conditionObjects : MutableList<Condition> = mutableListOf()
     val damageTypeObjects : MutableList<DamageType> = mutableListOf()
     val equipmentObjects : MutableList<Equipment> = mutableListOf()
@@ -757,34 +761,6 @@ class DnDViewModel : ViewModel() {
     val traitObjects : MutableList<Trait> = mutableListOf()
     val weaponPropertyObjects : MutableList<WeaponProperty> = mutableListOf()
 
-
-    init {
-        getAbilityScores()
-        getAlignments()
-        getBackgrounds()
-        getClasses()
-        getConditions()
-        getDamageTypes()
-        getEquipment()
-        getEquipmentCategories()
-        getFeats()
-        getFeatures()
-        getLanguages()
-        getMagicItems()
-        getMagicSchools()
-        getMonsters()
-        getProficiencies()
-        getRaces()
-        getRuleSections()
-        getRules()
-        getSkills()
-        getSpells()
-        getSubclasses()
-        getSubraces()
-        getTraits()
-        getWeaponProperties()
-    }
-
     fun getAbilityScores() {
         viewModelScope.launch {
             try {
@@ -792,8 +768,8 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val scoreInfo = DnDAPI.retrofitService.getAbilityScore(result.index)
-                        abilityScoreObjects.add(scoreInfo)
-                        //Log.i("MyTAG", "Added ${result.url}")
+//                        abilityScoreObjects.add(scoreInfo)
+                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Ability Score ${result.name}: ${e.message}")
                     }
@@ -845,17 +821,23 @@ class DnDViewModel : ViewModel() {
         }
     }
 
-    fun getClasses() {
+    suspend fun getClasses() {
+        val results = mutableListOf<Class>()
         viewModelScope.launch {
+            isLoading = true
             try {
                 val catInfo = DnDAPI.retrofitService.getCategory("classes")
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getClass(result.index)
-                        classObjects.add(info)
-//                        Log.i("MyTAG", "Added ${result.url}")
+                        val temp = classObjects.toMutableList()
+                        temp.add(info)
+                        classObjects = temp.toList()
+                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Class ${result.name}: ${e.message}")
+                    } finally {
+                        isLoading = false
                     }
                 }
 
@@ -863,6 +845,8 @@ class DnDViewModel : ViewModel() {
                 Log.e("MyTAG", "error with Class: ${e.message}")
             }
         }
+
+
     }
 
     fun getConditions() {

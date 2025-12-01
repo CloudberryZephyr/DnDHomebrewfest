@@ -35,12 +35,7 @@ import java.util.Locale
 import java.util.Locale.getDefault
 
 @Composable
-fun StandardSearchScreen(navController : NavController, modifier : Modifier = Modifier) {
-    // lazycolumn with results
-
-    val hbfVM : HBFViewModel = viewModel()
-    val hbfUIState by hbfVM.uiState.collectAsState()
-    val dndVM : DnDViewModel = viewModel()
+fun StandardSearchScreen(navController : NavController, hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
 
     // filter for type
     LazyColumn(
@@ -58,7 +53,7 @@ fun StandardSearchScreen(navController : NavController, modifier : Modifier = Mo
                 modifier = modifier.fillMaxWidth()
                     .padding(horizontal = 20.dp)
             ) {
-                Text(text = item.replaceFirstChar { if (it.isLowerCase()) it.titlecase(getDefault()) else it.toString() })
+                Text(text = item)
             }
         }
     }
