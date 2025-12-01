@@ -94,7 +94,6 @@ fun TopBar(modifier: Modifier = Modifier, screenName : String, back : () -> Unit
 fun BottomBar(modifier: Modifier = Modifier, screenName : String, navigate : (route : String) -> Unit) {
     NavigationBar(
         modifier = modifier.height(100.dp)
-            .padding(top=20.dp)
     ) {
         // characters
         NavigationBarItem(
@@ -104,8 +103,7 @@ fun BottomBar(modifier: Modifier = Modifier, screenName : String, navigate : (ro
             },
             icon = {
                 Image(painter = painterResource(R.drawable.character_icon),
-                    contentDescription = null,
-                    modifier = modifier.size(60.dp)
+                    contentDescription = null
                 )
             },
             modifier = modifier.fillMaxHeight()
@@ -119,7 +117,9 @@ fun BottomBar(modifier: Modifier = Modifier, screenName : String, navigate : (ro
             },
             icon = {
                 Image(painter = painterResource(R.drawable.barrel),
-                    contentDescription = null)
+                    contentDescription = null,
+                    modifier = modifier.padding(vertical = 10.dp)
+                )
             },
             modifier = modifier.fillMaxHeight()
 
@@ -133,7 +133,9 @@ fun BottomBar(modifier: Modifier = Modifier, screenName : String, navigate : (ro
             },
             icon = {
                 Image(painter = painterResource(R.drawable.book),
-                    contentDescription = null)
+                    contentDescription = null,
+                    modifier = modifier.padding(vertical = 10.dp)
+                )
             },
             modifier = modifier.fillMaxHeight()
 
