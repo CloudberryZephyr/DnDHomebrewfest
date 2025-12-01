@@ -5,10 +5,14 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.BottomAppBar
@@ -19,6 +23,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -27,8 +32,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -57,14 +64,14 @@ class MainActivity : ComponentActivity() {
 
                 val navController = rememberNavController()
                 val backStackEntry by navController.currentBackStackEntryAsState()
-                val screenName = backStackEntry?.destination?.route
+                val screenName = backStackEntry?.destination?.route ?: ""
 
                 Scaffold(modifier = Modifier.fillMaxSize(),
                     topBar = {
 
                     },
                     bottomBar = {
-
+                        BottomBar(screenName = screenName, navigate = navController::navigate)
                     }) { innerPadding ->
 
                     Homebrewery(navController)
@@ -86,13 +93,51 @@ fun TopBar(modifier: Modifier = Modifier, screenName : String, back : () -> Unit
 @Composable
 fun BottomBar(modifier: Modifier = Modifier, screenName : String, navigate : (route : String) -> Unit) {
     NavigationBar(
-        modifier = modifier
+        modifier = modifier.height(100.dp)
+            .padding(top=20.dp)
     ) {
         // characters
+        NavigationBarItem(
+            selected = screenName == Screens.CharacterView.name,
+            onClick = {
+                navigate(Screens.CharacterView.name)
+            },
+            icon = {
+                Image(painter = painterResource(R.drawable.character_icon),
+                    contentDescription = null,
+                    modifier = modifier.size(60.dp)
+                )
+            },
+            modifier = modifier.fillMaxHeight()
+        )
 
         // homebrew
+        NavigationBarItem(
+            selected = screenName == Screens.HomebrewView.name,
+            onClick = {
+                navigate(Screens.HomebrewView.name)
+            },
+            icon = {
+                Image(painter = painterResource(R.drawable.barrel),
+                    contentDescription = null)
+            },
+            modifier = modifier.fillMaxHeight()
+
+        )
 
         // standard
+        NavigationBarItem(
+            selected = screenName == Screens.StandardView.name,
+            onClick = {
+                navigate(Screens.StandardView.name)
+            },
+            icon = {
+                Image(painter = painterResource(R.drawable.book),
+                    contentDescription = null)
+            },
+            modifier = modifier.fillMaxHeight()
+
+        )
     }
 }
 
@@ -152,6 +197,6 @@ fun dbCard(character : Character, modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     DnDHomebrewfestTheme {
-        Homebrewery()
+        Homebrewery(rememberNavController())
     }
 }
