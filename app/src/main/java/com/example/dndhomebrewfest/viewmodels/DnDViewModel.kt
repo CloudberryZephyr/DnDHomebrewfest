@@ -18,12 +18,10 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonContentPolymorphicSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import java.util.Objects
 
 @Serializable(with = OptionSerializer::class)
 sealed interface Option {
@@ -39,7 +37,7 @@ sealed interface Option {
         val count : Int? = null,
         val item : ObjectReference? = null,
         val of : ObjectReference? = null,
-        val items : List<com.example.dndhomebrewfest.viewmodels.Option>? = null,
+        val items : List<Option>? = null,
         val choice : Choice? = null,
         val string : String? = null,
         val desc : String? = null,
@@ -81,7 +79,7 @@ object OptionStringSerializer : KSerializer<OptionString> {
 
 object OptionSerializer : JsonContentPolymorphicSerializer<Option>(Option::class) {
     override fun selectDeserializer(element: JsonElement) = when (element) {
-        is JsonPrimitive -> Option.OptionString.serializer()
+        is JsonPrimitive -> OptionString.serializer()
         is JsonObject -> Option.OptionObject.serializer()
         else -> throw SerializationException("Cannot determine the type to deserialize: $element")
     }
@@ -727,39 +725,32 @@ data class Category(
     val results : List<ObjectReference>
 )
 
-sealed interface CategoryUIState {
-    object Loading : CategoryUIState
-    object Error : CategoryUIState
-    class Success(val category : Category) : CategoryUIState
-}
-
 class DnDViewModel : ViewModel() {
 
-    val abilityScoreObjects by mutableStateOf<List<AbilityScore>>(emptyList())
-    val alignmentObjects : MutableList<Alignment> = mutableListOf()
-    val backgroundObjects : MutableList<Background> = mutableListOf()
+    var abilityScoreObjects by mutableStateOf<List<AbilityScore>>(emptyList())
+    var alignmentObjects by mutableStateOf<List<Alignment>>(emptyList())
+    var backgroundObjects by mutableStateOf<List<Background>>(emptyList())
     var classObjects by mutableStateOf<List<Class>>(emptyList())
-    var isLoading by mutableStateOf(false)
-    val conditionObjects : MutableList<Condition> = mutableListOf()
-    val damageTypeObjects : MutableList<DamageType> = mutableListOf()
-    val equipmentObjects : MutableList<Equipment> = mutableListOf()
-    val equipmentCategoryObjects : MutableList<EquipmentCategory> = mutableListOf()
-    val featObjects : MutableList<Feat> = mutableListOf()
-    val featureObjects : MutableList<Feature> = mutableListOf()
-    val languageObjects : MutableList<Language> = mutableListOf()
-    val magicItemObjects : MutableList<MagicItem> = mutableListOf()
-    val magicSchoolObjects : MutableList<MagicSchool> = mutableListOf()
-    val monsterObjects : MutableList<Monster> = mutableListOf()
-    val proficiencyObjects : MutableList<Proficiency> = mutableListOf()
-    val raceObjects : MutableList<Race> = mutableListOf()
-    val ruleSectionObjects : MutableList<RuleSection> = mutableListOf()
-    val ruleObjects : MutableList<Rule> = mutableListOf()
-    val skillObjects : MutableList<Skill> = mutableListOf()
-    val spellObjects : MutableList<Spell> = mutableListOf()
-    val subclassObjects : MutableList<Subclass> = mutableListOf()
-    val subraceObjects : MutableList<Subrace> = mutableListOf()
-    val traitObjects : MutableList<Trait> = mutableListOf()
-    val weaponPropertyObjects : MutableList<WeaponProperty> = mutableListOf()
+    var conditionObjects by mutableStateOf<List<Condition>>(emptyList())
+    var damageTypeObjects by mutableStateOf<List<DamageType>>(emptyList())
+    var equipmentObjects by mutableStateOf<List<Equipment>>(emptyList())
+    var equipmentCategoryObjects by mutableStateOf<List<EquipmentCategory>>(emptyList())
+    var featObjects by mutableStateOf<List<Feat>>(emptyList())
+    var featureObjects by mutableStateOf<List<Feature>>(emptyList())
+    var languageObjects by mutableStateOf<List<Language>>(emptyList())
+    var magicItemObjects by mutableStateOf<List<MagicItem>>(emptyList())
+    var magicSchoolObjects by mutableStateOf<List<MagicSchool>>(emptyList())
+    var monsterObjects by mutableStateOf<List<Monster>>(emptyList())
+    var proficiencyObjects by mutableStateOf<List<Proficiency>>(emptyList())
+    var raceObjects by mutableStateOf<List<Race>>(emptyList())
+    var ruleSectionObjects by mutableStateOf<List<RuleSection>>(emptyList())
+    var ruleObjects by mutableStateOf<List<Rule>>(emptyList())
+    var skillObjects by mutableStateOf<List<Skill>>(emptyList())
+    var spellObjects by mutableStateOf<List<Spell>>(emptyList())
+    var subclassObjects by mutableStateOf<List<Subclass>>(emptyList())
+    var subraceObjects by mutableStateOf<List<Subrace>>(emptyList())
+    var traitObjects by mutableStateOf<List<Trait>>(emptyList())
+    var weaponPropertyObjects by mutableStateOf<List<WeaponProperty>>(emptyList())
 
     fun getAbilityScores() {
         viewModelScope.launch {
@@ -767,8 +758,10 @@ class DnDViewModel : ViewModel() {
                 val catInfo = DnDAPI.retrofitService.getCategory("ability-scores")
                 for (result in catInfo.results) {
                     try {
-                        val scoreInfo = DnDAPI.retrofitService.getAbilityScore(result.index)
-//                        abilityScoreObjects.add(scoreInfo)
+                        val info = DnDAPI.retrofitService.getAbilityScore(result.index)
+                        val temp = abilityScoreObjects.toMutableList()
+                        temp.add(info)
+                        abilityScoreObjects = temp.toList()
                         Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Ability Score ${result.name}: ${e.message}")
@@ -787,8 +780,10 @@ class DnDViewModel : ViewModel() {
                 val catInfo = DnDAPI.retrofitService.getCategory("alignments")
                 for (result in catInfo.results) {
                     try {
-                        val alignmentInfo = DnDAPI.retrofitService.getAlignment(result.index)
-                        alignmentObjects.add(alignmentInfo)
+                        val info = DnDAPI.retrofitService.getAlignment(result.index)
+                        val temp = alignmentObjects.toMutableList()
+                        temp.add(info)
+                        alignmentObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Alignment ${result.name}: ${e.message}")
@@ -808,7 +803,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getBackground(result.index)
-                        backgroundObjects.add(info)
+                        val temp = backgroundObjects.toMutableList()
+                        temp.add(info)
+                        backgroundObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Background ${result.name}: ${e.message}")
@@ -821,10 +818,8 @@ class DnDViewModel : ViewModel() {
         }
     }
 
-    suspend fun getClasses() {
-        val results = mutableListOf<Class>()
+    fun getClasses() {
         viewModelScope.launch {
-            isLoading = true
             try {
                 val catInfo = DnDAPI.retrofitService.getCategory("classes")
                 for (result in catInfo.results) {
@@ -836,8 +831,6 @@ class DnDViewModel : ViewModel() {
                         Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Class ${result.name}: ${e.message}")
-                    } finally {
-                        isLoading = false
                     }
                 }
 
@@ -856,7 +849,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getCondition(result.index)
-                        conditionObjects.add(info)
+                        val temp = conditionObjects.toMutableList()
+                        temp.add(info)
+                        conditionObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Condition ${result.name}: ${e.message}")
@@ -876,7 +871,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getDamageType(result.index)
-                        damageTypeObjects.add(info)
+                        val temp = damageTypeObjects.toMutableList()
+                        temp.add(info)
+                        damageTypeObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with damage-types ${result.name}: ${e.message}")
@@ -896,7 +893,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getEquipment(result.index)
-                        equipmentObjects.add(info)
+                        val temp = equipmentObjects.toMutableList()
+                        temp.add(info)
+                        equipmentObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with equipment ${result.name}: ${e.message}")
@@ -916,7 +915,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getEquipmentCategory(result.index)
-                        equipmentCategoryObjects.add(info)
+                        val temp = equipmentCategoryObjects.toMutableList()
+                        temp.add(info)
+                        equipmentCategoryObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with equipment-categories ${result.name}: ${e.message}")
@@ -936,7 +937,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getFeat(result.index)
-                        featObjects.add(info)
+                        val temp = featObjects.toMutableList()
+                        temp.add(info)
+                        featObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with feats ${result.name}: ${e.message}")
@@ -956,7 +959,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getFeature(result.index)
-                        featureObjects.add(info)
+                        val temp = featureObjects.toMutableList()
+                        temp.add(info)
+                        featureObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with features ${result.name}: ${e.message}")
@@ -976,7 +981,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getLanguage(result.index)
-                        languageObjects.add(info)
+                        val temp = languageObjects.toMutableList()
+                        temp.add(info)
+                        languageObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with languages ${result.name}: ${e.message}")
@@ -996,7 +1003,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getMagicItem(result.index)
-                        magicItemObjects.add(info)
+                        val temp = magicItemObjects.toMutableList()
+                        temp.add(info)
+                        magicItemObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with magic-items ${result.name}: ${e.message}")
@@ -1016,7 +1025,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getMagicSchool(result.index)
-                        magicSchoolObjects.add(info)
+                        val temp = magicSchoolObjects.toMutableList()
+                        temp.add(info)
+                        magicSchoolObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with magic-schools ${result.name}: ${e.message}")
@@ -1036,7 +1047,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getMonster(result.index)
-                        monsterObjects.add(info)
+                        val temp = monsterObjects.toMutableList()
+                        temp.add(info)
+                        monsterObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with monsters ${result.name}: ${e.message}")
@@ -1056,7 +1069,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getProficiency(result.index)
-                        proficiencyObjects.add(info)
+                        val temp = proficiencyObjects.toMutableList()
+                        temp.add(info)
+                        proficiencyObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with proficiencies ${result.name}: ${e.message}")
@@ -1076,7 +1091,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getRace(result.index)
-                        raceObjects.add(info)
+                        val temp = raceObjects.toMutableList()
+                        temp.add(info)
+                        raceObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with races ${result.name}: ${e.message}")
@@ -1096,7 +1113,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getRuleSection(result.index)
-                        ruleSectionObjects.add(info)
+                        val temp = ruleSectionObjects.toMutableList()
+                        temp.add(info)
+                        ruleSectionObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with rule-sections ${result.name}: ${e.message}")
@@ -1116,7 +1135,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getRule(result.index)
-                        ruleObjects.add(info)
+                        val temp = ruleObjects.toMutableList()
+                        temp.add(info)
+                        ruleObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with rules ${result.name}: ${e.message}")
@@ -1136,7 +1157,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getSkill(result.index)
-                        skillObjects.add(info)
+                        val temp = skillObjects.toMutableList()
+                        temp.add(info)
+                        skillObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with skills ${result.name}: ${e.message}")
@@ -1156,7 +1179,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getSpell(result.index)
-                        spellObjects.add(info)
+                        val temp = spellObjects.toMutableList()
+                        temp.add(info)
+                        spellObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with spells ${result.name}: ${e.message}")
@@ -1176,7 +1201,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getSubclass(result.index)
-                        subclassObjects.add(info)
+                        val temp = subclassObjects.toMutableList()
+                        temp.add(info)
+                        subclassObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with subclasses ${result.name}: ${e.message}")
@@ -1196,7 +1223,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getSubrace(result.index)
-                        subraceObjects.add(info)
+                        val temp = subraceObjects.toMutableList()
+                        temp.add(info)
+                        subraceObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with subraces ${result.name}: ${e.message}")
@@ -1216,7 +1245,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getTrait(result.index)
-                        traitObjects.add(info)
+                        val temp = traitObjects.toMutableList()
+                        temp.add(info)
+                        traitObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with traits ${result.name}: ${e.message}")
@@ -1236,7 +1267,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getWeaponProperty(result.index)
-                        weaponPropertyObjects.add(info)
+                        val temp = weaponPropertyObjects.toMutableList()
+                        temp.add(info)
+                        weaponPropertyObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with weapon-properties ${result.name}: ${e.message}")

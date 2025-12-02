@@ -7,43 +7,26 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.dndhomebrewfest.R
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
-import com.example.dndhomebrewfest.Homebrewery
-import com.example.dndhomebrewfest.data.DataSource
-import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
-import com.example.dndhomebrewfest.viewmodels.Class
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
-import kotlinx.coroutines.runBlocking
 
 @Composable
 fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
@@ -108,16 +91,20 @@ fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
 
 @Composable
 fun searchAbilityScores( dndViewModel : DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.abilityScoreObjects.isEmpty()) { dndViewModel.getAbilityScores() }
-    val list = dndViewModel.abilityScoreObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.abilityScoreObjects.isEmpty()) {
+            dndViewModel.getAbilityScores()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.abilityScoreObjects) { item ->
             Card(
 
             ) {
@@ -131,16 +118,20 @@ fun searchAbilityScores( dndViewModel : DnDViewModel, modifier: Modifier = Modif
 
 @Composable
 fun searchAlignments( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.alignmentObjects.isEmpty()) { dndViewModel.getAlignments() }
-    val list = dndViewModel.alignmentObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.alignmentObjects.isEmpty()) {
+            dndViewModel.getAlignments()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.alignmentObjects) { item ->
             Card(
 
             ) {
@@ -154,16 +145,20 @@ fun searchAlignments( dndViewModel: DnDViewModel, modifier: Modifier = Modifier)
 
 @Composable
 fun searchBackgrounds( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.backgroundObjects.isEmpty()) dndViewModel.getBackgrounds()
-    val list = dndViewModel.backgroundObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.backgroundObjects.isEmpty()) {
+            dndViewModel.getBackgrounds()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.backgroundObjects) { item ->
             Card(
 
             ) {
@@ -173,7 +168,6 @@ fun searchBackgrounds( dndViewModel: DnDViewModel, modifier: Modifier = Modifier
             }
         }
     }
-
 }
 
 @Composable
@@ -185,27 +179,14 @@ fun searchClasses(dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
         if(dndViewModel.classObjects.isEmpty()) {
             dndViewModel.getClasses()
         }
-
-        Log.d("MyTAG", "Leaving")
-
-
     }
-
-    Log.d("MyTAG", "Out of if")
-
-    viewClass(dndViewModel.classObjects)
-
-}
-
-@Composable
-fun viewClass(list : List<Class>, modifier: Modifier = Modifier) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.classObjects) { item ->
             Card(
 
             ) {
@@ -215,20 +196,25 @@ fun viewClass(list : List<Class>, modifier: Modifier = Modifier) {
             }
         }
     }
+
 }
 
 @Composable
 fun searchConditions( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.conditionObjects.isEmpty()) dndViewModel.getConditions()
-    val list = dndViewModel.conditionObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.conditionObjects.isEmpty()) {
+            dndViewModel.getConditions()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.conditionObjects) { item ->
             Card(
 
             ) {
@@ -242,16 +228,20 @@ fun searchConditions( dndViewModel: DnDViewModel, modifier: Modifier = Modifier)
 
 @Composable
 fun searchDamageTypes( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.damageTypeObjects.isEmpty()) dndViewModel.getDamageTypes()
-    val list = dndViewModel.damageTypeObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.damageTypeObjects.isEmpty()) {
+            dndViewModel.getDamageTypes()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.damageTypeObjects) { item ->
             Card(
 
             ) {
@@ -265,16 +255,20 @@ fun searchDamageTypes( dndViewModel: DnDViewModel, modifier: Modifier = Modifier
 
 @Composable
 fun searchEquipment( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.equipmentObjects.isEmpty()) dndViewModel.getEquipment()
-    val list = dndViewModel.equipmentObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.equipmentObjects.isEmpty()) {
+            dndViewModel.getEquipment()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.equipmentObjects) { item ->
             Card(
 
             ) {
@@ -288,16 +282,20 @@ fun searchEquipment( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) 
 
 @Composable
 fun searchEquipmentObjects( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.equipmentCategoryObjects.isEmpty()) dndViewModel.getEquipmentCategories()
-    val list = dndViewModel.equipmentCategoryObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.equipmentCategoryObjects.isEmpty()) {
+            dndViewModel.getEquipmentCategories()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.equipmentCategoryObjects) { item ->
             Card(
 
             ) {
@@ -311,15 +309,20 @@ fun searchEquipmentObjects( dndViewModel: DnDViewModel, modifier: Modifier = Mod
 
 @Composable
 fun searchFeats( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.featObjects.isEmpty()) dndViewModel.getFeats()
-    val list = dndViewModel.featObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
+
+        if(dndViewModel.featObjects.isEmpty()) {
+            dndViewModel.getFeats()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.featObjects) { item ->
             Card(
 
             ) {
@@ -333,15 +336,20 @@ fun searchFeats( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
 @Composable
 fun searchFeatures( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.featureObjects.isEmpty()) dndViewModel.getFeatures()
-    val list = dndViewModel.featureObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
+
+        if(dndViewModel.featureObjects.isEmpty()) {
+            dndViewModel.getFeatures()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.featureObjects) { item ->
             Card(
 
             ) {
@@ -355,15 +363,20 @@ fun searchFeatures( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
 @Composable
 fun searchLanguages( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.languageObjects.isEmpty()) dndViewModel.getLanguages()
-    val list = dndViewModel.languageObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
+
+        if(dndViewModel.languageObjects.isEmpty()) {
+            dndViewModel.getLanguages()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.languageObjects) { item ->
             Card(
 
             ) {
@@ -377,15 +390,20 @@ fun searchLanguages( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) 
 
 @Composable
 fun searchMagicItems( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.magicItemObjects.isEmpty()) dndViewModel.getMagicItems()
-    val list = dndViewModel.magicItemObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
+
+        if(dndViewModel.magicItemObjects.isEmpty()) {
+            dndViewModel.getMagicItems()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.magicItemObjects) { item ->
             Card(
 
             ) {
@@ -399,15 +417,20 @@ fun searchMagicItems( dndViewModel: DnDViewModel, modifier: Modifier = Modifier)
 
 @Composable
 fun searchMagicSchool( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.magicSchoolObjects.isEmpty()) dndViewModel.getMagicSchools()
-    val list = dndViewModel.magicSchoolObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
+
+        if(dndViewModel.magicSchoolObjects.isEmpty()) {
+            dndViewModel.getMagicSchools()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.magicSchoolObjects) { item ->
             Card(
 
             ) {
@@ -421,16 +444,20 @@ fun searchMagicSchool( dndViewModel: DnDViewModel, modifier: Modifier = Modifier
 
 @Composable
 fun searchMonsters( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.monsterObjects.isEmpty()) dndViewModel.getMonsters()
-    val list = dndViewModel.monsterObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.monsterObjects.isEmpty()) {
+            dndViewModel.getMonsters()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.monsterObjects) { item ->
             Card(
 
             ) {
@@ -444,16 +471,20 @@ fun searchMonsters( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
 @Composable
 fun searchProficiencies( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.proficiencyObjects.isEmpty()) dndViewModel.getProficiencies()
-    val list = dndViewModel.proficiencyObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.proficiencyObjects.isEmpty()) {
+            dndViewModel.getProficiencies()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.proficiencyObjects) { item ->
             Card(
 
             ) {
@@ -467,16 +498,20 @@ fun searchProficiencies( dndViewModel: DnDViewModel, modifier: Modifier = Modifi
 
 @Composable
 fun searchRaces( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.raceObjects.isEmpty()) dndViewModel.getRaces()
-    val list = dndViewModel.raceObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.raceObjects.isEmpty()) {
+            dndViewModel.getRaces()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.raceObjects) { item ->
             Card(
 
             ) {
@@ -490,16 +525,20 @@ fun searchRaces( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
 @Composable
 fun searchRuleSections( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.ruleSectionObjects.isEmpty()) dndViewModel.getRuleSections()
-    val list = dndViewModel.ruleSectionObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.ruleSectionObjects.isEmpty()) {
+            dndViewModel.getRuleSections()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.ruleSectionObjects) { item ->
             Card(
 
             ) {
@@ -513,16 +552,20 @@ fun searchRuleSections( dndViewModel: DnDViewModel, modifier: Modifier = Modifie
 
 @Composable
 fun searchRules( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.ruleObjects.isEmpty()) dndViewModel.getRules()
-    val list = dndViewModel.ruleObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.ruleObjects.isEmpty()) {
+            dndViewModel.getRules()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.ruleObjects) { item ->
             Card(
 
             ) {
@@ -536,16 +579,20 @@ fun searchRules( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
 @Composable
 fun searchSkills( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.skillObjects.isEmpty()) dndViewModel.getSkills()
-    val list = dndViewModel.skillObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.skillObjects.isEmpty()) {
+            dndViewModel.getSkills()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.skillObjects) { item ->
             Card(
 
             ) {
@@ -559,16 +606,20 @@ fun searchSkills( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
 @Composable
 fun searchSpells( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.spellObjects.isEmpty()) dndViewModel.getSpells()
-    val list = dndViewModel.spellObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.spellObjects.isEmpty()) {
+            dndViewModel.getSpells()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.spellObjects) { item ->
             Card(
 
             ) {
@@ -582,16 +633,20 @@ fun searchSpells( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
 @Composable
 fun searchSubclasses( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.subclassObjects.isEmpty()) dndViewModel.getSubclasses()
-    val list = dndViewModel.subclassObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.subclassObjects.isEmpty()) {
+            dndViewModel.getSubclasses()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.subclassObjects) { item ->
             Card(
 
             ) {
@@ -605,16 +660,20 @@ fun searchSubclasses( dndViewModel: DnDViewModel, modifier: Modifier = Modifier)
 
 @Composable
 fun searchSubraces( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.subraceObjects.isEmpty()) dndViewModel.getSubraces()
-    val list = dndViewModel.subraceObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.subraceObjects.isEmpty()) {
+            dndViewModel.getSubraces()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.subraceObjects) { item ->
             Card(
 
             ) {
@@ -628,16 +687,20 @@ fun searchSubraces( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
 @Composable
 fun searchTraits( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.traitObjects.isEmpty()) dndViewModel.getTraits()
-    val list = dndViewModel.traitObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.traitObjects.isEmpty()) {
+            dndViewModel.getTraits()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.traitObjects) { item ->
             Card(
 
             ) {
@@ -651,16 +714,20 @@ fun searchTraits( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
 @Composable
 fun searchWeaponProperties( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    if (dndViewModel.weaponPropertyObjects.isEmpty()) dndViewModel.getWeaponProperties()
-    val list = dndViewModel.weaponPropertyObjects
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
 
+        if(dndViewModel.weaponPropertyObjects.isEmpty()) {
+            dndViewModel.getWeaponProperties()
+        }
+    }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = list) { item ->
+        items(items = dndViewModel.weaponPropertyObjects) { item ->
             Card(
 
             ) {
