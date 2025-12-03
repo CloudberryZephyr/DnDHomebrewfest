@@ -12,10 +12,24 @@ class HBFViewModel: ViewModel() {
 
     val uiState: StateFlow<HBFUiState> = _uiState.asStateFlow()
 
+    init{
+        resetVM()
+    }
+
+    fun resetVM() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                current_filter = "",
+                current_type = "",
+                showThisObject = null
+            )
+        }
+    }
+
     fun onCurrentFilterChanged(current_filter : String) {
         _uiState.update { currentState ->
             currentState.copy(
-                current_filter = current_filter
+                current_filter = current_filter.lowercase()
             )
         }
     }
@@ -28,5 +42,19 @@ class HBFViewModel: ViewModel() {
         }
     }
 
+    fun setObjectToShow(dndObject : Any) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                showThisObject = dndObject
+            )
+        }
+    }
 
+    fun onDialogDismiss() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                showThisObject = null
+            )
+        }
+    }
 }

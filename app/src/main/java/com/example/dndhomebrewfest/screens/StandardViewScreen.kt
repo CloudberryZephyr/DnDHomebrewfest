@@ -5,26 +5,40 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.example.dndhomebrewfest.R
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.dndhomebrewfest.HBFUiState
+import com.example.dndhomebrewfest.viewmodels.AbilityScore
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
 
@@ -59,7 +73,7 @@ fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
         }
 
         when (hbfUIState.current_type) {
-            "Ability Scores" -> searchAbilityScores(dndViewModel)
+            "Ability Scores" -> SearchAbilityScores(hbfVM, dndViewModel)
             "Alignments" -> searchAlignments(dndViewModel)
             "Backgrounds" -> searchBackgrounds(dndViewModel)
             "Classes" -> searchClasses( dndViewModel)
@@ -90,7 +104,9 @@ fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
 }
 
 @Composable
-fun searchAbilityScores( dndViewModel : DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchAbilityScores(hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -98,21 +114,66 @@ fun searchAbilityScores( dndViewModel : DnDViewModel, modifier: Modifier = Modif
             dndViewModel.getAbilityScores()
         }
     }
+
+    if(hbfUiState.showThisObject != null) {
+        ShowAbilityScore((hbfUiState.showThisObject) as AbilityScore, hbfVM)
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
 
     ) {
         items(items = dndViewModel.abilityScoreObjects) { item ->
-            Card(
 
+            if (item.full_name.lowercase().contains(hbfUiState.current_filter)) {
+                Card(
+                modifier = modifier.height(50.dp).requiredWidth(181.dp)
             ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
-
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(item.full_name.uppercase(),
+                                style = MaterialTheme.typography.bodyLarge,
+                                textAlign = TextAlign.Center)
+                        }
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+fun ShowAbilityScore(abilityScore: AbilityScore, hbfVM : HBFViewModel, modifier: Modifier = Modifier) {
+    // TODO: ADD SPECIFIC DATA LAYOUT
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(275.dp)
+                .height(175.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxSize()
+                    .padding(bottom = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = abilityScore.full_name, style = typography.titleLarge)
+            }
+        }
+
     }
 }
 
