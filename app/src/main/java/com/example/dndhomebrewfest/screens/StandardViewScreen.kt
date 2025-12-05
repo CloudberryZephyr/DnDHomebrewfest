@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.shapes
@@ -42,9 +44,16 @@ import com.example.dndhomebrewfest.HBFUiState
 import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
 import com.example.dndhomebrewfest.viewmodels.AbilityScore
 import com.example.dndhomebrewfest.viewmodels.AlignmentDnD
+import com.example.dndhomebrewfest.viewmodels.Background
+import com.example.dndhomebrewfest.viewmodels.BackgroundFeature
+import com.example.dndhomebrewfest.viewmodels.Choice
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
+import com.example.dndhomebrewfest.viewmodels.Equipments
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
 import com.example.dndhomebrewfest.viewmodels.ObjectReference
+import com.example.dndhomebrewfest.viewmodels.Option
+import com.example.dndhomebrewfest.viewmodels.OptionsSet
+import java.util.stream.IntStream.range
 
 @Composable
 fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
@@ -79,7 +88,7 @@ fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
         when (hbfUIState.current_type) {
             "Ability Scores" -> SearchAbilityScores(hbfVM, dndViewModel)
             "Alignments" -> searchAlignments(hbfVM, dndViewModel)
-            "Backgrounds" -> searchBackgrounds(dndViewModel)
+            "Backgrounds" -> searchBackgrounds(hbfVM,dndViewModel)
             "Classes" -> searchClasses( dndViewModel)
             "Conditions" -> searchConditions(dndViewModel)
             "Damage Types" -> searchDamageTypes(dndViewModel)
@@ -111,6 +120,10 @@ fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
 fun SearchAbilityScores(hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
+    if(hbfUiState.showThisObject != null) {
+        ShowAbilityScore((hbfUiState.showThisObject) as AbilityScore, hbfVM)
+    }
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -119,9 +132,6 @@ fun SearchAbilityScores(hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modifi
         }
     }
 
-    if(hbfUiState.showThisObject != null) {
-        ShowAbilityScore((hbfUiState.showThisObject) as AbilityScore, hbfVM)
-    }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -160,7 +170,6 @@ fun SearchAbilityScores(hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modifi
 
 @Composable
 fun ShowAbilityScore(abilityScore: AbilityScore, hbfVM : HBFViewModel, modifier: Modifier = Modifier) {
-    // TODO: ADD SPECIFIC DATA LAYOUT
     Dialog(
         onDismissRequest = hbfVM::onDialogDismiss
     ) {
@@ -269,7 +278,13 @@ fun ShowAlignment(alignment: AlignmentDnD, hbfVM : HBFViewModel, modifier: Modif
 }
 
 @Composable
-fun searchBackgrounds( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchBackgrounds(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
+    if(hbfUiState.showThisObject != null) {
+        ShowBackground((hbfUiState.showThisObject) as Background, hbfVM)
+    }
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -277,6 +292,7 @@ fun searchBackgrounds( dndViewModel: DnDViewModel, modifier: Modifier = Modifier
             dndViewModel.getBackgrounds()
         }
     }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
@@ -285,13 +301,122 @@ fun searchBackgrounds( dndViewModel: DnDViewModel, modifier: Modifier = Modifier
     ) {
         items(items = dndViewModel.backgroundObjects) { item ->
             Card(
-
+                modifier = modifier.height(50.dp).requiredWidth(181.dp)
             ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Row(
+                    modifier = modifier.fillMaxHeight(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(
+                        onClick = {
+                            hbfVM.setObjectToShow(item)
+                        },
+                        modifier.fillMaxSize()
+                    ) {
+                        Text(item.name.uppercase() ,
+                            style = typography.bodyLarge,
+                            textAlign = TextAlign.Center)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ShowBackground(background: Background, hbfVM : HBFViewModel, modifier: Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp).verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = background.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text(text = "Starting Proficiencies:")
+                for (skill in background.starting_proficiencies) {
+                    Text(text = skill.name)
+                }
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text(text = "Starting Equipment:")
+                for (e in background.starting_equipment) {
+                    Text(text = "${e.equipment.name} x${e.quantity}")
+                }
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                for (starting_option in background.starting_equipment_options) {
+                    Text("Choose ${starting_option.choose} ${starting_option.from.equipment_category?.name}")
+                }
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text(text = "Feature: ${background.feature.name}")
+                for (p in background.feature.desc) {
+                    Text(text = p, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center)
+                }
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text(text = "Choose ${background.personality_traits.choose} traits:")
+                for (option in background.personality_traits.from.options!!) {
+                    Text(text = (option as Option.OptionObject).string!!, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center)
+                    Spacer(modifier = modifier.height(7.dp))
+                }
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text(text = "Choose ${background.ideals.choose} ideal:")
+                for (option in background.ideals.from.options!!) {
+                    Text(text = (option as Option.OptionObject).desc!!, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center)
+
+                    var alignments = ""
+                    for (i in range(0, option.alignments!!.size - 1)) {
+                        alignments = alignments + option.alignments[i].name + ", "
+                    }
+                    alignments += option.alignments[option.alignments.size-1].name
+
+                    Text(text = alignments, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center)
+
+                    Spacer(modifier = modifier.height(7.dp))
+                }
+
+                Spacer(modifier = modifier.height(3.dp))
+
+                Text(text = "Choose ${background.bonds.choose} bond:")
+                for (option in background.bonds.from.options!!) {
+                    Text(text = (option as Option.OptionObject).string!!, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center)
+                    Spacer(modifier = modifier.height(7.dp))
+                }
+
+                Spacer(modifier = modifier.height(3.dp))
+
+                Text(text = "Choose ${background.flaws.choose} flaw:")
+                for (option in background.flaws.from.options!!) {
+                    Text(text = (option as Option.OptionObject).string!!, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center)
+                    Spacer(modifier = modifier.height(7.dp))
+                }
 
             }
         }
+
     }
 }
 
@@ -868,11 +993,114 @@ fun searchWeaponProperties( dndViewModel: DnDViewModel, modifier: Modifier = Mod
 @Composable
 fun ShowAbilityScorePreview() {
     DnDHomebrewfestTheme {
-        ShowAbilityScore(AbilityScore(index = "cha", "cha", "Charisma",
-            desc = listOf("desc stuff", "selling tomato fruit salad  alksd  idoihaskjhd dhsjk hdahshd ka jshdkajhskjhdkajhsjkdh jhsdkjahksjdh sjhdakjhsd sjkhdakjshdkjsh da"),
-            skills = listOf(ObjectReference(index = "thing", name = "Acrobatics", url = "dsasd")),
-            url = "asknsd",
-            updated_at = "now"),
+        ShowBackground(Background(
+            index = "thing",
+            name = "Background",
+            starting_proficiencies = listOf(
+                ObjectReference(
+                    index = "ability",
+                    name = "athetics",
+                    url = "url"
+                )
+            ),
+            language_options = Choice(
+                choose = 1,
+                type = "language",
+                from = OptionsSet(
+                    option_set_type = "resource_list",
+                    resource_list_url = "resource list url"
+                )
+            ),
+            starting_equipment = listOf(
+                Equipments(
+                    equipment = ObjectReference(
+                        index = "ind",
+                        name = "clothes",
+                        url = "equipment url"
+                    ),
+                    quantity = 2
+                )
+            ),
+            starting_equipment_options = listOf(
+                Choice(
+                    choose = 1,
+                    type = "equipment",
+                    from = OptionsSet(
+                        option_set_type = "equipment category",
+                        equipment_category = ObjectReference(
+                            index = "thing",
+                            name = "holy symbols",
+                            url = "url"
+                        )
+                    )
+                )
+            ),
+            feature = BackgroundFeature(
+                name = "Background Feature",
+                desc = listOf("feature details aljshdkahs ahsdkjha sjhda ajsdh  hdsh hd s")
+            ),
+            personality_traits = Choice(
+                choose = 2,
+                type = "traits",
+                from = OptionsSet(
+                    option_set_type = "options array",
+                    options = listOf(
+                        Option.OptionObject(
+                            option_type = "string",
+                            string = "akjs s asdh hsjdah aksjhd jshdhhakshkdiwjsn"
+                        )
+                    )
+                )
+            ),
+            ideals = Choice(
+                choose = 1,
+                type = "ideals",
+                from = OptionsSet(
+                    option_set_type = "options array",
+                    options = listOf(
+                        Option.OptionObject(
+                            option_type = "ideal",
+                            desc = "tradition",
+                            alignments = listOf(
+                                ObjectReference(
+                                    index = "good",
+                                    name = "neutral good",
+                                    url = "url"
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
+            bonds = Choice(
+                choose = 2,
+                type = "bonds",
+                from = OptionsSet(
+                    option_set_type = "options array",
+                    options = listOf(
+                        Option.OptionObject(
+                            option_type = "string",
+                            string = "akjs s asdh hsjdah aksjhd jshdhhakshkdiwjsn"
+                        )
+                    )
+                )
+            ),
+            flaws = Choice(
+                choose = 2,
+                type = "flaws",
+                from = OptionsSet(
+                    option_set_type = "options array",
+                    options = listOf(
+                        Option.OptionObject(
+                            option_type = "string",
+                            string = "akjs s asdh hsjdah aksjhd jshdhhakshkdiwjsn"
+                        )
+                    )
+                )
+            ),
+            url = "background url",
+            updated_at = "now",
+        ),
             hbfVM = viewModel())
     }
 }
