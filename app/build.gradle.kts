@@ -67,6 +67,8 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.ui.tooling.preview)
+    debugImplementation(libs.androidx.ui.tooling)
 
     // add room library
     val room_version = "2.8.3"

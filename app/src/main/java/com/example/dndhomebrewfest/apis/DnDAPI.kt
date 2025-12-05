@@ -1,7 +1,7 @@
 package com.example.dndhomebrewfest.apis
 
 import com.example.dndhomebrewfest.viewmodels.AbilityScore
-import com.example.dndhomebrewfest.viewmodels.Alignment
+import com.example.dndhomebrewfest.viewmodels.AlignmentDnD
 import com.example.dndhomebrewfest.viewmodels.Background
 import com.example.dndhomebrewfest.viewmodels.Category
 import com.example.dndhomebrewfest.viewmodels.Class
@@ -41,7 +41,7 @@ interface DndAPIService {
     suspend fun getAbilityScore(@Path("score") score : String) : AbilityScore
 
     @GET("/api/2014/alignments/{alignment}")
-    suspend fun getAlignment(@Path("alignment") alignment : String) : Alignment
+    suspend fun getAlignment(@Path("alignment") alignment : String) : AlignmentDnD
 
     @GET("/api/2014/backgrounds/{background}")
     suspend fun getBackground(@Path("background") background : String) : Background
@@ -115,8 +115,10 @@ object DnDAPI {
 
     private val base_url = "https://www.dnd5eapi.co/"
 
+    private val json = Json { ignoreUnknownKeys = false }
+
     private val retrofit = Retrofit.Builder()
-        .addConverterFactory(Json{ignoreUnknownKeys = false}.asConverterFactory("application/json".toMediaType()))
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .baseUrl(base_url)
         .build()
 
