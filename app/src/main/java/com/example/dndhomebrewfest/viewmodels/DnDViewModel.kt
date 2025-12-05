@@ -152,7 +152,7 @@ data class AbilityScore(
 )
 
 @Serializable
-data class Alignment(
+data class AlignmentDnD(
     val index: String,
     val name: String,
     val abbreviation: String,
@@ -728,7 +728,7 @@ data class Category(
 class DnDViewModel : ViewModel() {
 
     var abilityScoreObjects by mutableStateOf<List<AbilityScore>>(emptyList())
-    var alignmentObjects by mutableStateOf<List<Alignment>>(emptyList())
+    var alignmentDnDObjects by mutableStateOf<List<AlignmentDnD>>(emptyList())
     var backgroundObjects by mutableStateOf<List<Background>>(emptyList())
     var classObjects by mutableStateOf<List<Class>>(emptyList())
     var conditionObjects by mutableStateOf<List<Condition>>(emptyList())
@@ -781,9 +781,9 @@ class DnDViewModel : ViewModel() {
                 for (result in catInfo.results) {
                     try {
                         val info = DnDAPI.retrofitService.getAlignment(result.index)
-                        val temp = alignmentObjects.toMutableList()
+                        val temp = alignmentDnDObjects.toMutableList()
                         temp.add(info)
-                        alignmentObjects = temp.toList()
+                        alignmentDnDObjects = temp.toList()
 //                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Alignment ${result.name}: ${e.message}")

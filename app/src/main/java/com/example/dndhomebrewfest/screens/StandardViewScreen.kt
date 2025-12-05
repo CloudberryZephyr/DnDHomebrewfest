@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,8 +19,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
@@ -33,14 +32,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.dndhomebrewfest.R
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dndhomebrewfest.HBFUiState
+import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
 import com.example.dndhomebrewfest.viewmodels.AbilityScore
+import com.example.dndhomebrewfest.viewmodels.AlignmentDnD
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
+import com.example.dndhomebrewfest.viewmodels.ObjectReference
 
 @Composable
 fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
@@ -74,7 +78,7 @@ fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
 
         when (hbfUIState.current_type) {
             "Ability Scores" -> SearchAbilityScores(hbfVM, dndViewModel)
-            "Alignments" -> searchAlignments(dndViewModel)
+            "Alignments" -> searchAlignments(hbfVM, dndViewModel)
             "Backgrounds" -> searchBackgrounds(dndViewModel)
             "Classes" -> searchClasses( dndViewModel)
             "Conditions" -> searchConditions(dndViewModel)
@@ -131,7 +135,7 @@ fun SearchAbilityScores(hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modifi
             if (item.full_name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                 modifier = modifier.height(50.dp).requiredWidth(181.dp)
-            ) {
+                ) {
                     Row(
                         modifier = modifier.fillMaxHeight(),
                         horizontalArrangement = Arrangement.Center,
@@ -144,7 +148,7 @@ fun SearchAbilityScores(hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modifi
                             modifier.fillMaxSize()
                         ) {
                             Text(item.full_name.uppercase(),
-                                style = MaterialTheme.typography.bodyLarge,
+                                style = typography.bodyLarge,
                                 textAlign = TextAlign.Center)
                         }
                     }
@@ -161,16 +165,30 @@ fun ShowAbilityScore(abilityScore: AbilityScore, hbfVM : HBFViewModel, modifier:
         onDismissRequest = hbfVM::onDialogDismiss
     ) {
         Card(
-            modifier = modifier.width(275.dp)
-                .height(175.dp)
+            modifier = modifier.width(300.dp)
         ) {
             Column(
-                modifier = modifier.fillMaxSize()
-                    .padding(bottom = 10.dp),
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceAround
             ) {
-                Text(text = abilityScore.full_name, style = typography.titleLarge)
+                Text(text = abilityScore.full_name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                for (s in abilityScore.desc) {
+                    Text(text = s, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center)
+                    Spacer(modifier = modifier.height(7.dp))
+                }
+
+                Spacer(modifier = modifier.height(3.dp))
+
+                Text(text = "Related Skills:")
+                for (skill in abilityScore.skills) {
+                    Text(text = skill.name)
+                }
             }
         }
 
@@ -178,29 +196,75 @@ fun ShowAbilityScore(abilityScore: AbilityScore, hbfVM : HBFViewModel, modifier:
 }
 
 @Composable
-fun searchAlignments( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchAlignments(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
-        if(dndViewModel.alignmentObjects.isEmpty()) {
+        if(dndViewModel.alignmentDnDObjects.isEmpty()) {
             dndViewModel.getAlignments()
         }
     }
+
+    if(hbfUiState.showThisObject != null) {
+        ShowAlignment((hbfUiState.showThisObject) as AlignmentDnD, hbfVM)
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = dndViewModel.alignmentObjects) { item ->
+        items(items = dndViewModel.alignmentDnDObjects) { item ->
             Card(
-
+                modifier = modifier.height(50.dp).requiredWidth(181.dp)
             ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
-
+                Row(
+                    modifier = modifier.fillMaxHeight(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(
+                        onClick = {
+                            hbfVM.setObjectToShow(item)
+                        },
+                        modifier.fillMaxSize()
+                    ) {
+                        Text(item.name.uppercase() ,
+                            style = typography.bodyLarge,
+                            textAlign = TextAlign.Center)
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+fun ShowAlignment(alignment: AlignmentDnD, hbfVM : HBFViewModel, modifier: Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = alignment.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text(text = alignment.desc, style = typography.bodyMedium,
+                    textAlign = TextAlign.Center)
+            }
+        }
+
     }
 }
 
@@ -797,5 +861,18 @@ fun searchWeaponProperties( dndViewModel: DnDViewModel, modifier: Modifier = Mod
 
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ShowAbilityScorePreview() {
+    DnDHomebrewfestTheme {
+        ShowAbilityScore(AbilityScore(index = "cha", "cha", "Charisma",
+            desc = listOf("desc stuff", "selling tomato fruit salad  alksd  idoihaskjhd dhsjk hdahshd ka jshdkajhskjhdkajhsjkdh jhsdkjahksjdh sjhdakjhsd sjkhdakjshdkjsh da"),
+            skills = listOf(ObjectReference(index = "thing", name = "Acrobatics", url = "dsasd")),
+            url = "asknsd",
+            updated_at = "now"),
+            hbfVM = viewModel())
     }
 }
