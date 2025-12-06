@@ -30,9 +30,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
@@ -223,6 +227,7 @@ fun searchAlignments(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier:
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
 
     ) {
@@ -296,6 +301,7 @@ fun searchBackgrounds(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
 
     ) {
@@ -326,6 +332,12 @@ fun searchBackgrounds(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier
 
 @Composable
 fun ShowBackground(background: Background, hbfVM : HBFViewModel, modifier: Modifier = Modifier) {
+    var expandFeature by remember { mutableStateOf(false) }
+    var expandTraits by remember { mutableStateOf(false) }
+    var expandIdeals by remember { mutableStateOf(false) }
+    var expandBonds by remember { mutableStateOf(false) }
+    var expandFlaws by remember { mutableStateOf(false) }
+
     Dialog(
         onDismissRequest = hbfVM::onDialogDismiss
     ) {
@@ -338,7 +350,11 @@ fun ShowBackground(background: Background, hbfVM : HBFViewModel, modifier: Modif
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceAround
             ) {
-                Text(text = background.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+                Text(
+                    text = background.name,
+                    style = typography.titleLarge,
+                    textDecoration = TextDecoration.Underline
+                )
 
                 Spacer(modifier = modifier.height(10.dp))
 
@@ -362,43 +378,119 @@ fun ShowBackground(background: Background, hbfVM : HBFViewModel, modifier: Modif
 
                 Spacer(modifier = modifier.height(10.dp))
 
-                Text(text = "Feature: ${background.feature.name}")
-                for (p in background.feature.desc) {
-                    Text(text = p, style = typography.bodyMedium,
-                        textAlign = TextAlign.Center)
-                }
-
-                Spacer(modifier = modifier.height(10.dp))
-
-                Text(text = "Choose ${background.personality_traits.choose} traits:")
-                for (option in background.personality_traits.from.options!!) {
-                    Text(text = (option as Option.OptionObject).string!!, style = typography.bodyMedium,
-                        textAlign = TextAlign.Center)
-                    Spacer(modifier = modifier.height(7.dp))
-                }
-
-                Spacer(modifier = modifier.height(10.dp))
-
-                Text(text = "Choose ${background.ideals.choose} ideal:")
-                for (option in background.ideals.from.options!!) {
-                    Text(text = (option as Option.OptionObject).desc!!, style = typography.bodyMedium,
-                        textAlign = TextAlign.Center)
-
-                    var alignments = ""
-                    for (i in range(0, option.alignments!!.size - 1)) {
-                        alignments = alignments + option.alignments[i].name + ", "
+                TextButton(
+                    onClick = {
+                        expandFeature = !expandFeature
+                    },
+                ) {
+                    Row() {
+                        Text(text = "Feature: ${background.feature.name}")
+                        Icon(
+                            painter = painterResource(if (expandFeature) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                            contentDescription = null,
+                            modifier = modifier.size(20.dp)
+                        )
                     }
-                    alignments += option.alignments[option.alignments.size-1].name
+                }
 
-                    Text(text = alignments, style = typography.bodyMedium,
-                        textAlign = TextAlign.Center)
+                if (expandFeature) {
+                    for (p in background.feature.desc) {
+                        Text(
+                            text = p, style = typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            modifier = modifier.padding( horizontal = 25.dp)
+                        )
+                    }
+                }
 
-                    Spacer(modifier = modifier.height(7.dp))
+                Spacer(modifier = modifier.height(10.dp))
+
+
+                TextButton(
+                    onClick = {
+                        expandTraits = !expandTraits
+                    },
+                ) {
+                    Row() {
+                        Text(text = "Choose ${background.personality_traits.choose} traits:")
+                        Icon(
+                            painter = painterResource(if (expandTraits) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                            contentDescription = null,
+                            modifier = modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                if (expandTraits) {
+                    for (option in background.personality_traits.from.options!!) {
+                        Text(
+                            text = (option as Option.OptionObject).string!!,
+                            style = typography.bodyMedium,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = modifier.height(7.dp))
+                    }
+                }
+
+                Spacer(modifier = modifier.height(10.dp))
+
+
+                TextButton(
+                    onClick = {
+                        expandIdeals = !expandIdeals
+                    },
+                ) {
+                    Row() {
+                        Text(text = "Choose ${background.ideals.choose} ideal:")
+                        Icon(
+                            painter = painterResource(if (expandIdeals) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                            contentDescription = null,
+                            modifier = modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                if (expandIdeals) {
+                    for (option in background.ideals.from.options!!) {
+                        Text(
+                            text = (option as Option.OptionObject).desc!!,
+                            style = typography.bodyMedium,
+                            textAlign = TextAlign.Center
+                        )
+
+                        var alignments = ""
+                        for (i in range(0, option.alignments!!.size - 1)) {
+                            alignments = alignments + option.alignments[i].name + ", "
+                        }
+                        alignments += option.alignments[option.alignments.size - 1].name
+
+                        Text(
+                            text = alignments, style = typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            fontStyle = FontStyle.Italic
+                        )
+
+                        Spacer(modifier = modifier.height(7.dp))
+                    }
                 }
 
                 Spacer(modifier = modifier.height(3.dp))
 
-                Text(text = "Choose ${background.bonds.choose} bond:")
+                TextButton(
+                    onClick = {
+                        expandBonds = !expandBonds
+                    },
+                ) {
+                    Row() {
+                        Text(text = "Choose ${background.bonds.choose} bond:")
+                        Icon(
+                            painter = painterResource(if (expandBonds) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                            contentDescription = null,
+                            modifier = modifier.size(20.dp)
+                        )
+                    }
+                }
+                if (expandBonds)
                 for (option in background.bonds.from.options!!) {
                     Text(text = (option as Option.OptionObject).string!!, style = typography.bodyMedium,
                         textAlign = TextAlign.Center)
@@ -407,11 +499,30 @@ fun ShowBackground(background: Background, hbfVM : HBFViewModel, modifier: Modif
 
                 Spacer(modifier = modifier.height(3.dp))
 
-                Text(text = "Choose ${background.flaws.choose} flaw:")
-                for (option in background.flaws.from.options!!) {
-                    Text(text = (option as Option.OptionObject).string!!, style = typography.bodyMedium,
-                        textAlign = TextAlign.Center)
-                    Spacer(modifier = modifier.height(7.dp))
+                TextButton(
+                    onClick = {
+                        expandFlaws = !expandFlaws
+                    },
+                ) {
+                    Row() {
+                        Text(text = "Choose ${background.flaws.choose} flaw:")
+                        Icon(
+                            painter = painterResource(if (expandFlaws) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                            contentDescription = null,
+                            modifier = modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                if (expandFlaws) {
+                    for (option in background.flaws.from.options!!) {
+                        Text(
+                            text = (option as Option.OptionObject).string!!,
+                            style = typography.bodyMedium,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = modifier.height(7.dp))
+                    }
                 }
 
             }
