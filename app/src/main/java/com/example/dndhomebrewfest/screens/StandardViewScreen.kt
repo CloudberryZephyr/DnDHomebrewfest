@@ -35,7 +35,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -51,8 +53,11 @@ import com.example.dndhomebrewfest.viewmodels.AlignmentDnD
 import com.example.dndhomebrewfest.viewmodels.Background
 import com.example.dndhomebrewfest.viewmodels.BackgroundFeature
 import com.example.dndhomebrewfest.viewmodels.Choice
+import com.example.dndhomebrewfest.viewmodels.Class
+import com.example.dndhomebrewfest.viewmodels.ClassLevel
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
 import com.example.dndhomebrewfest.viewmodels.Equipments
+import com.example.dndhomebrewfest.viewmodels.Feature
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
 import com.example.dndhomebrewfest.viewmodels.ObjectReference
 import com.example.dndhomebrewfest.viewmodels.Option
@@ -93,7 +98,7 @@ fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
             "Ability Scores" -> SearchAbilityScores(hbfVM, dndViewModel)
             "Alignments" -> searchAlignments(hbfVM, dndViewModel)
             "Backgrounds" -> searchBackgrounds(hbfVM,dndViewModel)
-            "Classes" -> searchClasses( dndViewModel)
+            "Classes" -> searchClasses( hbfVM, dndViewModel)
             "Conditions" -> searchConditions(dndViewModel)
             "Damage Types" -> searchDamageTypes(dndViewModel)
             "Equipment" -> searchEquipment(dndViewModel)
@@ -532,7 +537,12 @@ fun ShowBackground(background: Background, hbfVM : HBFViewModel, modifier: Modif
 }
 
 @Composable
-fun searchClasses(dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchClasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
+    if(hbfUiState.showThisObject != null) {
+        ShowClasses((hbfUiState.showThisObject) as Class, hbfVM, dndViewModel)
+    }
 
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
@@ -540,25 +550,401 @@ fun searchClasses(dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
         if(dndViewModel.classObjects.isEmpty()) {
             dndViewModel.getClasses()
         }
+        if(dndViewModel.featureObjects.isEmpty()) {
+            dndViewModel.getFeatures()
+        }
     }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
 
     ) {
         items(items = dndViewModel.classObjects) { item ->
             Card(
-
+                modifier = modifier.height(50.dp).requiredWidth(181.dp)
             ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
-
+                Row(
+                    modifier = modifier.fillMaxHeight(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(
+                        onClick = {
+                            hbfVM.setObjectToShow(item)
+                        },
+                        modifier.fillMaxSize()
+                    ) {
+                        Text(item.name.uppercase() ,
+                            style = typography.bodyLarge,
+                            textAlign = TextAlign.Center)
+                    }
+                }
             }
         }
     }
 
 }
+
+@Composable
+fun ShowClasses(classObj: Class, hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    var expandProficiencies by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        dndViewModel.getClassLevels(classObj.index)
+    }
+    
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp).verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = classObj.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                var savingThrows = ""
+                for (i in range(0, classObj.saving_throws!!.size - 1)) {
+                    savingThrows = savingThrows + classObj.saving_throws[i].name + ", "
+                }
+                savingThrows += classObj.saving_throws[classObj.saving_throws.size - 1].name
+
+                Text(text = "Saving Throws: $savingThrows")
+
+                Text(text = "Hit dice: d${classObj.hit_die}")
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text(text = "Choose Proficiencies", style = typography.bodyMedium,
+                    textAlign = TextAlign.Center)
+                for (prof in classObj.proficiency_choices) {
+                    prof.desc?.let {
+                        Text(
+                            text = it, style = typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                TextButton(
+                    onClick = {
+                        expandProficiencies = !expandProficiencies
+                    },
+                ) {
+                    Row() {
+                        Text(text = "Proficiencies:")
+                        Icon(
+                            painter = painterResource(if (expandProficiencies) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                            contentDescription = null,
+                            modifier = modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                if (expandProficiencies) {
+                    for (p in classObj.proficiencies) {
+                        Text(
+                            text = p.name, style = typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            modifier = modifier.padding( horizontal = 25.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text(text = "Starting Equipment:")
+                for (e in classObj.starting_equipment) {
+                    Text(text = "${e.equipment.name} x${e.quantity}")
+                }
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text("Starting Equipment:")
+                for (starting_option in classObj.starting_equipment_options) {
+                    Text("Choose ${starting_option.choose} ${starting_option.desc}", style = typography.bodyMedium,
+                        textAlign = TextAlign.Center)
+                }
+                // skipping info on multiclassing for now
+
+                // class leveling
+                for (level in dndViewModel.classLevelObjects) {
+                    showClassLevel(level, dndViewModel)
+                }
+
+                Spacer(modifier.height(10.dp))
+
+                // spell casting
+                if (classObj.spellcasting != null) {
+                    var expandSpellCasting by remember {mutableStateOf(false)}
+                    TextButton(
+                        onClick = {
+                            expandSpellCasting = !expandSpellCasting
+                        },
+                    ) {
+                        Row() {
+                            Text("Spellcasting", textDecoration = TextDecoration.Underline, style = typography.bodyLarge)
+                            Icon(
+                                painter = painterResource(if (expandSpellCasting) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                                contentDescription = null,
+                                modifier = modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    if (expandSpellCasting) {
+                        // spell slot table
+
+                        Row(
+                            modifier = modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("Level", style = typography.bodyMedium)
+                                for (level in dndViewModel.classLevelObjects) {
+                                    Text("${level.level}", style = typography.bodyMedium)
+                                }
+                            }
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text( "Cantrips", style = typography.bodyMedium)
+                                for (level in dndViewModel.classLevelObjects) {
+                                    Text("${level.spellcasting?.cantrips_known ?: "-"}", style = typography.bodyMedium)
+                                }
+                            }
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("Spells", style = typography.bodyMedium)
+                                for (level in dndViewModel.classLevelObjects){
+                                    Text("${level.spellcasting?.spells_known ?: "-"}", style = typography.bodyMedium)
+                                }
+                            }
+                            for (i in range(1, 10)){
+                                Column() {
+                                    Text("$i", style = typography.bodyMedium)
+                                    for (level in dndViewModel.classLevelObjects) {
+                                        when (i) {
+                                            1 -> Text("${level.spellcasting?.spell_slots_level_1 ?: "-"}", style = typography.bodyMedium)
+                                            2 -> Text ("${level.spellcasting?.spell_slots_level_2 ?: "-"}", style = typography.bodyMedium)
+                                            3 -> Text("${level.spellcasting?.spell_slots_level_3 ?: "-"}", style = typography.bodyMedium)
+                                            4 -> Text("${level.spellcasting?.spell_slots_level_4 ?: "-"}", style = typography.bodyMedium)
+                                            5 -> Text ("${level.spellcasting?.spell_slots_level_5 ?: "-"}", style = typography.bodyMedium)
+                                            6 -> Text("${level.spellcasting?.spell_slots_level_6 ?: "-"}", style = typography.bodyMedium)
+                                            7 -> Text("${level.spellcasting?.spell_slots_level_7 ?: "-"}", style = typography.bodyMedium)
+                                            8 -> Text ("${level.spellcasting?.spell_slots_level_8 ?: "-"}", style = typography.bodyMedium)
+                                            else -> Text("${level.spellcasting?.spell_slots_level_9 ?: "-"}", style = typography.bodyMedium)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+
+
+
+                        Text("Spellcasting ability: ${classObj.spellcasting.spellcasting_ability.name}",
+                            style = typography.bodyMedium)
+                        Spacer(modifier.height(5.dp))
+                        for (info in classObj.spellcasting.info) {
+                            var expand by remember { mutableStateOf(false) }
+
+                            TextButton(
+                                onClick = {
+                                    expand = !expand
+                                },
+                            ) {
+                                Row() {
+                                    Text(text = info.name)
+                                    Icon(
+                                        painter = painterResource(if (expand) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                                        contentDescription = null,
+                                        modifier = modifier.size(20.dp)
+                                    )
+                                }
+                            }
+
+                            if (expand) {
+                                for (p in info.desc) {
+                                    Text(
+                                        text = p, style = typography.bodyMedium,
+                                        textAlign = TextAlign.Center,
+                                        modifier = modifier.padding(horizontal = 25.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun showClassLevel(level : ClassLevel, dndViewModel: DnDViewModel, modifier : Modifier = Modifier) {
+    var expand by remember {mutableStateOf(false)}
+
+    LaunchedEffect(Unit) {
+        if(dndViewModel.featureObjects.isEmpty()) {
+            dndViewModel.getFeatures()
+        }
+    }
+
+    Column(
+        modifier = modifier.padding(horizontal = 15.dp).fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        TextButton(
+            onClick = {
+                expand = !expand
+            },
+        ) {
+            Row() {
+                Text("Level ${level.level}", style = typography.bodyLarge,
+                    textDecoration = TextDecoration.Underline)
+                Icon(
+                    painter = painterResource(if (expand) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                    contentDescription = null,
+                    modifier = modifier.size(20.dp)
+                )
+            }
+        }
+
+        if (expand) {
+            if (level.ability_score_bonuses != 0) {
+                Text("+${level.ability_score_bonuses} ability score bonus")
+            }
+            Text("Proficiency Bonus: +${level.prof_bonus}")
+
+            when (level.classRef.index) {
+                "barbarian" -> {
+                    Text("Rage Count: ${level.class_specific.rage_count}")
+                    Text("Rage Damage Bonus: +${level.class_specific.rage_damage_bonus}")
+                    if (level.class_specific.brutal_critical_dice != 0)  Text("Brutal Critical Dice: ${level.class_specific.brutal_critical_dice}")
+                }
+                "bard" -> {
+                    Text("Bardic Inspiration: d${level.class_specific.bardic_inspiration_die}")
+                    if(level.class_specific.song_of_rest_die != 0) Text("Song of Rest: d${level.class_specific.song_of_rest_die}")
+                    if(level.class_specific.magical_secrets_max_5 != 0) Text("Magical Secret Slots below 5: ${level.class_specific.magical_secrets_max_5}")
+                    if(level.class_specific.magical_secrets_max_7 != 0) Text("Magical Secret Slots below 7: ${level.class_specific.magical_secrets_max_7}")
+                    if(level.class_specific.magical_secrets_max_9 != 0) Text("Magical Secret Slots below 9: ${level.class_specific.magical_secrets_max_9}")
+                }
+                "cleric" -> {
+                    if(level.class_specific.channel_divinity_charges != 0) Text("Channel Divinity Charges: ${level.class_specific.channel_divinity_charges}")
+                    if(level.class_specific.destroy_undead_cr != 0.0) Text ("Destroy Undead CR ${level.class_specific.destroy_undead_cr} or Below")
+                }
+                "druid" -> {
+                    if (level.class_specific.wild_shape_max_cr != 0.0) {
+                        Text("Wild Shape Max CR ${level.class_specific.wild_shape_max_cr}")
+                        if(level.class_specific.wild_shape_swim == true) {
+                            if (level.class_specific.wild_shape_fly == true) {
+                                Text("Swimming and Flying Speed Allowed", textAlign = TextAlign.Center)
+                            } else {
+                                Text("Swimming Speed Allowed")
+                            }
+                        }
+                    }
+                }
+                "fighter" -> {
+                    if (level.class_specific.action_surges != 0) Text("Action Surges: ${level.class_specific.action_surges}")
+                    if (level.class_specific.indomitable_uses != 0) Text("Indomitable Uses: ${level.class_specific.indomitable_uses}")
+                    if (level.class_specific.extra_attacks != 0) Text("Extra Attacks: ${level.class_specific.extra_attacks}")
+                }
+                "monk" -> {
+                    Text("Martial Arts Dice: ${level.class_specific.martial_arts?.dice_count}d${level.class_specific.martial_arts?.dice_value}")
+                    if (level.class_specific.ki_points != 0) Text("Ki Points: ${level.class_specific.ki_points}")
+                    if (level.class_specific.unarmored_movement != 0) Text("Unarmored Movement: +${level.class_specific.unarmored_movement} feet")
+                }
+                "paladin" -> {
+                    if (level.class_specific.aura_range != 0) Text("Aura Range: ${level.class_specific.aura_range} feet")
+                }
+                "ranger" -> {
+                    if (level.class_specific.favored_enemies != 0) Text("Favored Enemies: ${level.class_specific.favored_enemies}")
+                    if (level.class_specific.favored_terrain != 0) Text("Favored Terrains: ${level.class_specific.favored_terrain}")
+                }
+                "rogue" -> {
+                    Text("Sneak Attack: ${level.class_specific.sneak_attack?.dice_count}d${level.class_specific.sneak_attack?.dice_value}")
+                }
+                "sorcerer" -> {
+                    if (level.class_specific.sorcery_points != 0) Text("Sorcery Points: ${level.class_specific.sorcery_points}")
+                    if (level.class_specific.metamagic_known != 0) Text("Metamagics Known: ${level.class_specific.metamagic_known}")
+                    if (level.class_specific.creating_spell_slots?.isEmpty() == false) {
+                        Text ("Spell Slot Creation Table:")
+                        for (slot in level.class_specific.creating_spell_slots) {
+                            Text("${slot.sorcery_point_cost} Sorcery Points for Level ${slot.spell_slot_level} Spell Slot", style = typography.bodyMedium)
+                        }
+                    }
+                }
+                "warlock" -> {
+                    if (level.class_specific.invocations_known != 0) Text("Invocations: ${level.class_specific.invocations_known}")
+                    if (level.class_specific.mystic_arcanum_level_6 != 0) {
+                        var arcana : String = "6" +
+                                if (level.class_specific.mystic_arcanum_level_7 != 0) ", 7" else "" +
+                                if (level.class_specific.mystic_arcanum_level_8 != 0) ", 8" else "" +
+                                if (level.class_specific.mystic_arcanum_level_9 != 0) ", 9" else ""
+                        Text ("Level $arcana Mystic Arcanum Unlocked", textAlign = TextAlign.Center)
+                    }
+                }
+                "wizard" -> {
+                    Text("Arcane Recovery Levels: ${level.class_specific.arcane_recovery_levels}")
+                }
+            }
+
+            // get the indexes of the features specific to this level
+            val featureList : MutableList<Feature> = mutableListOf()
+            for (classfeature in level.features) {
+                for (feature in dndViewModel.featureObjects) {
+                    if (classfeature.index == feature.index) {
+                        featureList.add(feature)
+                    }
+                }
+            }
+
+            for (feature in featureList) {
+
+                var expandFeature by remember { mutableStateOf(false) }
+
+                TextButton(
+                    onClick = {
+                        expandFeature = !expandFeature
+                    },
+                ) {
+                    Row() {
+                        Text(
+                            feature.name, style = typography.bodyLarge, color = Color.Black, textAlign = TextAlign.Center
+                        )
+                        Icon(
+                            painter = painterResource(if (expandFeature) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                            contentDescription = null,
+                            modifier = modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                if (expandFeature) {
+                    for (desc in feature.desc) {
+                        Text(desc, style = typography.bodyMedium, textAlign = TextAlign.Center)
+                        Spacer(modifier.height(3.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 @Composable
 fun searchConditions( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
@@ -1104,114 +1490,6 @@ fun searchWeaponProperties( dndViewModel: DnDViewModel, modifier: Modifier = Mod
 @Composable
 fun ShowAbilityScorePreview() {
     DnDHomebrewfestTheme {
-        ShowBackground(Background(
-            index = "thing",
-            name = "Background",
-            starting_proficiencies = listOf(
-                ObjectReference(
-                    index = "ability",
-                    name = "athetics",
-                    url = "url"
-                )
-            ),
-            language_options = Choice(
-                choose = 1,
-                type = "language",
-                from = OptionsSet(
-                    option_set_type = "resource_list",
-                    resource_list_url = "resource list url"
-                )
-            ),
-            starting_equipment = listOf(
-                Equipments(
-                    equipment = ObjectReference(
-                        index = "ind",
-                        name = "clothes",
-                        url = "equipment url"
-                    ),
-                    quantity = 2
-                )
-            ),
-            starting_equipment_options = listOf(
-                Choice(
-                    choose = 1,
-                    type = "equipment",
-                    from = OptionsSet(
-                        option_set_type = "equipment category",
-                        equipment_category = ObjectReference(
-                            index = "thing",
-                            name = "holy symbols",
-                            url = "url"
-                        )
-                    )
-                )
-            ),
-            feature = BackgroundFeature(
-                name = "Background Feature",
-                desc = listOf("feature details aljshdkahs ahsdkjha sjhda ajsdh  hdsh hd s")
-            ),
-            personality_traits = Choice(
-                choose = 2,
-                type = "traits",
-                from = OptionsSet(
-                    option_set_type = "options array",
-                    options = listOf(
-                        Option.OptionObject(
-                            option_type = "string",
-                            string = "akjs s asdh hsjdah aksjhd jshdhhakshkdiwjsn"
-                        )
-                    )
-                )
-            ),
-            ideals = Choice(
-                choose = 1,
-                type = "ideals",
-                from = OptionsSet(
-                    option_set_type = "options array",
-                    options = listOf(
-                        Option.OptionObject(
-                            option_type = "ideal",
-                            desc = "tradition",
-                            alignments = listOf(
-                                ObjectReference(
-                                    index = "good",
-                                    name = "neutral good",
-                                    url = "url"
-                                )
-                            )
-                        )
-                    )
-                )
-            ),
-            bonds = Choice(
-                choose = 2,
-                type = "bonds",
-                from = OptionsSet(
-                    option_set_type = "options array",
-                    options = listOf(
-                        Option.OptionObject(
-                            option_type = "string",
-                            string = "akjs s asdh hsjdah aksjhd jshdhhakshkdiwjsn"
-                        )
-                    )
-                )
-            ),
-            flaws = Choice(
-                choose = 2,
-                type = "flaws",
-                from = OptionsSet(
-                    option_set_type = "options array",
-                    options = listOf(
-                        Option.OptionObject(
-                            option_type = "string",
-                            string = "akjs s asdh hsjdah aksjhd jshdhhakshkdiwjsn"
-                        )
-                    )
-                )
-            ),
-            url = "background url",
-            updated_at = "now",
-        ),
-            hbfVM = viewModel())
+
     }
 }

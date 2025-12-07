@@ -5,6 +5,7 @@ import com.example.dndhomebrewfest.viewmodels.AlignmentDnD
 import com.example.dndhomebrewfest.viewmodels.Background
 import com.example.dndhomebrewfest.viewmodels.Category
 import com.example.dndhomebrewfest.viewmodels.Class
+import com.example.dndhomebrewfest.viewmodels.ClassLevel
 import com.example.dndhomebrewfest.viewmodels.Condition
 import com.example.dndhomebrewfest.viewmodels.DamageType
 import com.example.dndhomebrewfest.viewmodels.Equipment
@@ -108,6 +109,9 @@ interface DndAPIService {
 
     @GET("/api/2014/weapon-properties/{weapon-property}")
     suspend fun getWeaponProperty(@Path("weapon-property") weaponProperty : String) : WeaponProperty
+
+    @GET("/api/2014/classes/{class}/levels")
+    suspend fun getClassLevels(@Path("class") className : String) : List<ClassLevel>
 
 }
 
