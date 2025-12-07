@@ -21,7 +21,8 @@ class HBFViewModel: ViewModel() {
             currentState.copy(
                 current_filter = "",
                 current_type = "",
-                showThisObject = null
+                showThisObject = null,
+                current_equip_cat = ""
             )
         }
     }
@@ -38,6 +39,14 @@ class HBFViewModel: ViewModel() {
         _uiState.update { currentState ->
             currentState.copy(
                 current_type = current_type
+            )
+        }
+    }
+
+    fun setEquipCat(equipmentType : String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                current_equip_cat = equipmentType
             )
         }
     }

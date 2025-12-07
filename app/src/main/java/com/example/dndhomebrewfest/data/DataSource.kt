@@ -14,7 +14,6 @@ object DataSource {
         "Classes",
         "Conditions",
         "Damage Types",
-        "Equipment",
         "Equipment Categories",
         "Feats",
         "Features",

@@ -55,7 +55,11 @@ import com.example.dndhomebrewfest.viewmodels.BackgroundFeature
 import com.example.dndhomebrewfest.viewmodels.Choice
 import com.example.dndhomebrewfest.viewmodels.Class
 import com.example.dndhomebrewfest.viewmodels.ClassLevel
+import com.example.dndhomebrewfest.viewmodels.Condition
+import com.example.dndhomebrewfest.viewmodels.DamageType
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
+import com.example.dndhomebrewfest.viewmodels.Equipment
+import com.example.dndhomebrewfest.viewmodels.EquipmentCategory
 import com.example.dndhomebrewfest.viewmodels.Equipments
 import com.example.dndhomebrewfest.viewmodels.Feature
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
@@ -99,10 +103,9 @@ fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
             "Alignments" -> searchAlignments(hbfVM, dndViewModel)
             "Backgrounds" -> searchBackgrounds(hbfVM,dndViewModel)
             "Classes" -> searchClasses( hbfVM, dndViewModel)
-            "Conditions" -> searchConditions(dndViewModel)
-            "Damage Types" -> searchDamageTypes(dndViewModel)
-            "Equipment" -> searchEquipment(dndViewModel)
-            "Equipment Categories" -> searchEquipmentObjects(dndViewModel)
+            "Conditions" -> searchConditions(hbfVM, dndViewModel)
+            "Damage Types" -> searchDamageTypes(hbfVM, dndViewModel)
+            "Equipment Categories" -> searchEquipmentCategories(hbfVM, dndViewModel)
             "Feats" -> searchFeats(dndViewModel)
             "Features" -> searchFeatures(dndViewModel)
             "Languages" -> searchLanguages(dndViewModel)
@@ -495,11 +498,15 @@ fun ShowBackground(background: Background, hbfVM : HBFViewModel, modifier: Modif
                         )
                     }
                 }
-                if (expandBonds)
-                for (option in background.bonds.from.options!!) {
-                    Text(text = (option as Option.OptionObject).string!!, style = typography.bodyMedium,
-                        textAlign = TextAlign.Center)
-                    Spacer(modifier = modifier.height(7.dp))
+                if (expandBonds) {
+                    for (option in background.bonds.from.options!!) {
+                        Text(
+                            text = (option as Option.OptionObject).string!!,
+                            style = typography.bodyMedium,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = modifier.height(7.dp))
+                    }
                 }
 
                 Spacer(modifier = modifier.height(3.dp))
@@ -559,7 +566,6 @@ fun searchClasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Mod
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
-
     ) {
         items(items = dndViewModel.classObjects) { item ->
             Card(
@@ -678,7 +684,7 @@ fun ShowClasses(classObj: Class, hbfVM: HBFViewModel, dndViewModel: DnDViewModel
 
                 // class leveling
                 for (level in dndViewModel.classLevelObjects) {
-                    showClassLevel(level, dndViewModel)
+                    ShowClassLevel(level, dndViewModel)
                 }
 
                 Spacer(modifier.height(10.dp))
@@ -794,7 +800,7 @@ fun ShowClasses(classObj: Class, hbfVM: HBFViewModel, dndViewModel: DnDViewModel
 }
 
 @Composable
-fun showClassLevel(level : ClassLevel, dndViewModel: DnDViewModel, modifier : Modifier = Modifier) {
+fun ShowClassLevel(level : ClassLevel, dndViewModel: DnDViewModel, modifier : Modifier = Modifier) {
     var expand by remember {mutableStateOf(false)}
 
     LaunchedEffect(Unit) {
@@ -945,9 +951,14 @@ fun showClassLevel(level : ClassLevel, dndViewModel: DnDViewModel, modifier : Mo
     }
 }
 
-
 @Composable
-fun searchConditions( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchConditions(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
+    if(hbfUiState.showThisObject != null) {
+        ShowCondition((hbfUiState.showThisObject) as Condition, hbfVM)
+    }
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -958,23 +969,73 @@ fun searchConditions( dndViewModel: DnDViewModel, modifier: Modifier = Modifier)
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
-
     ) {
         items(items = dndViewModel.conditionObjects) { item ->
             Card(
-
+                modifier = modifier.height(50.dp).requiredWidth(181.dp)
             ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
-
+                Row(
+                    modifier = modifier.fillMaxHeight(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(
+                        onClick = {
+                            hbfVM.setObjectToShow(item)
+                        },
+                        modifier.fillMaxSize()
+                    ) {
+                        Text(item.name.uppercase() ,
+                            style = typography.bodyLarge,
+                            textAlign = TextAlign.Center)
+                    }
+                }
             }
+
         }
     }
 }
 
 @Composable
-fun searchDamageTypes( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun ShowCondition(condition : Condition, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = condition.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                for (desc in condition.desc) {
+                    Text(
+                        text = desc, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
+fun searchDamageTypes(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
+    if(hbfUiState.showThisObject != null) {
+        ShowDamageType((hbfUiState.showThisObject) as DamageType, hbfVM)
+    }
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -985,26 +1046,108 @@ fun searchDamageTypes( dndViewModel: DnDViewModel, modifier: Modifier = Modifier
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
-
     ) {
         items(items = dndViewModel.damageTypeObjects) { item ->
             Card(
-
+                modifier = modifier.height(50.dp).requiredWidth(181.dp)
             ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
-
+                Row(
+                    modifier = modifier.fillMaxHeight(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(
+                        onClick = {
+                            hbfVM.setObjectToShow(item)
+                        },
+                        modifier.fillMaxSize()
+                    ) {
+                        Text(item.name.uppercase() ,
+                            style = typography.bodyLarge,
+                            textAlign = TextAlign.Center)
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun searchEquipment( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    LaunchedEffect(Unit) {
-        Log.d("MyTAG", "In launched effect")
+fun ShowDamageType(dmgType: DamageType, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = dmgType.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
 
+                Spacer(modifier = modifier.height(10.dp))
+
+                for (desc in dmgType.desc) {
+                    Text(
+                        text = desc, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
+fun ShowEquipment(equipment: Equipment, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = equipment.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                for (desc in equipment.desc) {
+                    Text(
+                        text = desc, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
+fun searchEquipmentCategories(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+    var showEquipment by remember {mutableStateOf(false)}
+    var thisCat : EquipmentCategory? by remember {mutableStateOf(null)}
+
+    if(hbfUiState.showThisObject != null) {
+        ShowEquipment((hbfUiState.showThisObject) as Equipment, hbfVM)
+    }
+
+    LaunchedEffect(Unit) {
+        if(dndViewModel.equipmentCategoryObjects.isEmpty()) {
+            dndViewModel.getEquipmentCategories()
+        }
         if(dndViewModel.equipmentObjects.isEmpty()) {
             dndViewModel.getEquipment()
         }
@@ -1012,43 +1155,72 @@ fun searchEquipment( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
-
     ) {
-        items(items = dndViewModel.equipmentObjects) { item ->
-            Card(
+        if (showEquipment) {
+            val equipmentInCat = mutableListOf<Equipment>()
+            val equipmentIndexes = mutableListOf<String>()
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
-
+            for (equipment in thisCat?.equipment!!) {
+                equipmentIndexes.add(equipment.index)
             }
-        }
-    }
-}
 
-@Composable
-fun searchEquipmentObjects( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    LaunchedEffect(Unit) {
-        Log.d("MyTAG", "In launched effect")
+            for (equipment in dndViewModel.equipmentObjects) {
+                if (equipmentIndexes.contains(equipment.index)) {
+                    equipmentInCat.add(equipment)
+                }
+            }
 
-        if(dndViewModel.equipmentCategoryObjects.isEmpty()) {
-            dndViewModel.getEquipmentCategories()
-        }
-    }
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(4.dp)
-
-    ) {
-        items(items = dndViewModel.equipmentCategoryObjects) { item ->
-            Card(
-
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
-
+            items(items = equipmentInCat) { item ->
+                Card(
+                    modifier = modifier.height(65.dp).requiredWidth(181.dp)
+                ) {
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            items(items = dndViewModel.equipmentCategoryObjects) { item ->
+                Card(
+                    modifier = modifier.height(65.dp).requiredWidth(181.dp)
+                ) {
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            onClick = {
+                                thisCat = item
+                                showEquipment = true
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -1483,13 +1655,5 @@ fun searchWeaponProperties( dndViewModel: DnDViewModel, modifier: Modifier = Mod
 
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ShowAbilityScorePreview() {
-    DnDHomebrewfestTheme {
-
     }
 }
