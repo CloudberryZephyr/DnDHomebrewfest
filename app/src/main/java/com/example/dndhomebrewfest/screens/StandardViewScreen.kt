@@ -119,7 +119,6 @@ fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
             "Magic Items" -> searchMagicItems(hbfVM, dndViewModel)
             "Magic Schools" -> searchMagicSchool(hbfVM, dndViewModel)
             "Monsters" -> searchMonsters(hbfVM, dndViewModel)
-            "Proficiencies" -> searchProficiencies(hbfVM, dndViewModel)
             "Races" -> searchRaces(hbfVM, dndViewModel)
             "Rule Sections" -> searchRuleSections(hbfVM, dndViewModel)
             "Rules" -> searchRules(hbfVM, dndViewModel)
@@ -1743,6 +1742,10 @@ fun ShowMagicSchool(school: MagicSchool, hbfVM: HBFViewModel, modifier: Modifier
 fun searchMonsters(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
+    if(hbfUiState.showThisObject != null) {
+        ShowMonster((hbfUiState.showThisObject) as Monster, hbfVM)
+    }
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1772,40 +1775,17 @@ fun searchMonsters(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Mo
 }
 
 @Composable
-fun searchProficiencies(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+fun ShowMonster(monster: Monster, hbfVM: HBFViewModel) {
 
-    LaunchedEffect(Unit) {
-        Log.d("MyTAG", "In launched effect")
-
-        if(dndViewModel.proficiencyObjects.isEmpty()) {
-            dndViewModel.getProficiencies()
-        }
-    }
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(4.dp)
-
-    ) {
-        items(items = dndViewModel.proficiencyObjects) { item ->
-            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
-
-                Card(
-
-                ) {
-                    Text(item.name)
-                    // TODO: ADD SPECIFIC DATA LAYOUT
-
-                }
-            }
-        }
-    }
 }
 
 @Composable
 fun searchRaces(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
+    if(hbfUiState.showThisObject != null) {
+        ShowRace((hbfUiState.showThisObject) as Race, hbfVM)
+    }
 
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
@@ -1817,21 +1797,134 @@ fun searchRaces(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modif
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
-
     ) {
         items(items = dndViewModel.raceObjects) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
-
                 Card(
-
+                    modifier = modifier.height(50.dp).requiredWidth(181.dp)
                 ) {
-                    Text(item.name)
-                    // TODO: ADD SPECIFIC DATA LAYOUT
-
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ShowRace(race: Race, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = race.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text("Speed: ${race.speed} feet")
+
+                for (ab in race.ability_bonuses) {
+                    Text("${ab.ability_score.name} +${ab.bonus}", style = typography.bodyMedium)
+                }
+
+                if (race.ability_bonus_options != null) {
+                    Text("Choose ${race.ability_bonus_options.choose} from:", style = typography.bodyMedium)
+
+                    var options: String = ((race.ability_bonus_options.from.options)?.get(0) as Option.OptionObject).ability_score?.name ?: ""
+
+                    for (option in race.ability_bonus_options.from.options?.subList(1,race.ability_bonus_options.from.options.size-1)!!) {
+                        options = options + ", " + (option as Option.OptionObject).ability_score?.name
+                    }
+
+                    Text(options, style = typography.bodyMedium, textAlign = TextAlign.Center)
+                }
+
+                Text(
+                    text = "Alignment: ${race.alignment}", style = typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+
+                Text(race.age, style = typography.bodyMedium)
+
+                Text(race.size_description, style = typography.bodyMedium, textAlign = TextAlign.Center)
+
+                Spacer(modifier.height(10.dp))
+
+                var langs: String = race.languages[0].name
+
+                for (lang in race.languages.subList(1,race.languages.size-1)) {
+                    langs = langs + ", " + lang.name
+                }
+
+                Text("Languages: ${langs}", style = typography.bodyMedium, textAlign = TextAlign.Center)
+
+                if (race.language_options != null) {
+                    Text(race.language_desc, style = typography.bodyMedium)
+
+                    var options: String = ((race.language_options.from.options)?.get(0) as Option.OptionObject).ability_score?.name ?: ""
+
+                    for (option in race.language_options.from.options.subList(1,race.language_options.from.options.size-1)) {
+                        options = options + ", " + (option as Option.OptionObject).ability_score?.name
+                    }
+
+                    Text(options, style = typography.bodyMedium, textAlign = TextAlign.Center)
+                }
+
+                Spacer(modifier.height(10.dp))
+
+                Text("Traits:", style = typography.bodyMedium)
+
+                var traits: String = race.traits.get(0).name
+
+                for (option in race.traits.subList(1,race.traits.size-1)) {
+                    traits = traits + ", " + option.name
+                }
+
+                Text(traits, style = typography.bodyMedium, textAlign = TextAlign.Center)
+
+                Spacer(modifier.height(10.dp))
+
+                Text("Subraces:", style = typography.bodyMedium)
+
+                if (race.subraces.size > 0) {
+                    var subraces: String = race.subraces.get(0).name
+
+                    for (option in race.subraces.dropLast(1)) {
+                        subraces = subraces + ", " + option.name
+                    }
+
+                    Text(subraces, style = typography.bodyMedium, textAlign = TextAlign.Center)
+                }
+
+            }
+        }
+
     }
 }
 

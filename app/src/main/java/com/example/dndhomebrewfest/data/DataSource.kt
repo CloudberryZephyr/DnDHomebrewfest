@@ -20,7 +20,6 @@ object DataSource {
         "Magic Items",
         "Magic Schools",
         "Monsters",
-        "Proficiencies",
         "Races",
         "Rule Sections",
         "Rules",
