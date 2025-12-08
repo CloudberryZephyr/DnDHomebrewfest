@@ -1505,7 +1505,6 @@ fun searchLanguages(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: M
     }
 }
 
-
 @Composable
 fun ShowLanguage(lang: Language, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
     Dialog(
@@ -1553,6 +1552,10 @@ fun ShowLanguage(lang: Language, hbfVM: HBFViewModel, modifier: Modifier = Modif
 fun searchMagicItems(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
+    if(hbfUiState.showThisObject != null) {
+        ShowMagicItems((hbfUiState.showThisObject) as MagicItem, hbfVM)
+    }
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1561,22 +1564,100 @@ fun searchMagicItems(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: 
         }
     }
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Fixed(1),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
 
     ) {
         items(items = dndViewModel.magicItemObjects) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
-
+                    modifier = modifier.height(65.dp).requiredWidth(250.dp)
                 ) {
-                    Text(item.name)
-                    // TODO: ADD SPECIFIC DATA LAYOUT
-
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (item.image != null) {
+//                            Log.d("MyTAG", "IMG: ${item.image}")
+                            AsyncImage(
+                                model = ImageRequest.Builder(context = LocalContext.current)
+                                    .data("https://www.dnd5eapi.co${item.image}")
+                                    .crossfade(true)
+                                    .listener(
+                                        onError = { request, result ->
+                                            // The request failed. 'result.throwable' contains the error.
+                                            Log.e("ImageLoader", "Loading image failed for URL: ${request.data}", result.throwable)
+                                        }
+                                    )
+                                    .build(),
+                                error = painterResource(R.drawable.ic_broken_image),
+                                placeholder = painterResource(R.drawable.loading_img),
+                                contentDescription = "",
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ShowMagicItems(magicItem : MagicItem, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = magicItem.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text(magicItem.equipment_category.name,  style = typography.bodyMedium)
+                Text(magicItem.rarity.name, style = typography.bodyMedium)
+
+                for (desc in magicItem.desc) {
+                    Text(
+                        text = desc, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                if (!magicItem.variants.isEmpty()) {
+                    var variants = magicItem.variants[0].name
+
+                    for (variant in magicItem.variants.subList(1,magicItem.variants.size-1)) {
+                        variants = variants + ", " + variant.name
+                    }
+
+                    Text("Variants: ${variants}", style = typography.bodyMedium, textAlign = TextAlign.Center)
+                }
+            }
+        }
+
     }
 }
 
