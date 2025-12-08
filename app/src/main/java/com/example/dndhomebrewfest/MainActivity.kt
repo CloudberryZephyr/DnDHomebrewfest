@@ -46,6 +46,8 @@ import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
 import com.example.dndhomebrewfest.viewmodels.RoomVM
 import com.example.dndhomebrewfest.data.Character
+import com.example.dndhomebrewfest.screens.CharacterCreationScreen
+import com.example.dndhomebrewfest.screens.CharacterViewScreen
 import com.example.dndhomebrewfest.screens.StandardSearchScreen
 import com.example.dndhomebrewfest.screens.StandardViewScreen
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
@@ -158,10 +160,14 @@ fun Homebrewery(navController : NavHostController, modifier: Modifier = Modifier
     ) {
         composable(route = Screens.CharacterView.name) {
             // Character View
+            CharacterViewScreen(
+                createCharacter = {navController.navigate(Screens.CharacterCreation.name)}
+            )
         }
 
         composable(route = Screens.CharacterCreation.name) {
             // Character Creation
+            CharacterCreationScreen(hbfVM, modifier = Modifier)
         }
 
         composable(route = Screens.HomebrewView.name) {
