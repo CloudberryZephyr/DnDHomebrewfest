@@ -36,6 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -46,9 +48,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.dndhomebrewfest.R
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import coil3.request.lifecycle
 import com.example.dndhomebrewfest.HBFUiState
 import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
-import com.example.dndhomebrewfest.viewmodels.AbilityScore
+import com.example.dndhomebrewfest.viewmodels.*
 import com.example.dndhomebrewfest.viewmodels.AlignmentDnD
 import com.example.dndhomebrewfest.viewmodels.Background
 import com.example.dndhomebrewfest.viewmodels.BackgroundFeature
@@ -56,11 +62,13 @@ import com.example.dndhomebrewfest.viewmodels.Choice
 import com.example.dndhomebrewfest.viewmodels.Class
 import com.example.dndhomebrewfest.viewmodels.ClassLevel
 import com.example.dndhomebrewfest.viewmodels.Condition
+import com.example.dndhomebrewfest.viewmodels.Damage
 import com.example.dndhomebrewfest.viewmodels.DamageType
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
 import com.example.dndhomebrewfest.viewmodels.Equipment
 import com.example.dndhomebrewfest.viewmodels.EquipmentCategory
 import com.example.dndhomebrewfest.viewmodels.Equipments
+import com.example.dndhomebrewfest.viewmodels.Feat
 import com.example.dndhomebrewfest.viewmodels.Feature
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
 import com.example.dndhomebrewfest.viewmodels.ObjectReference
@@ -100,28 +108,27 @@ fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
 
         when (hbfUIState.current_type) {
             "Ability Scores" -> SearchAbilityScores(hbfVM, dndViewModel)
-            "Alignments" -> searchAlignments(hbfVM, dndViewModel)
-            "Backgrounds" -> searchBackgrounds(hbfVM,dndViewModel)
-            "Classes" -> searchClasses( hbfVM, dndViewModel)
-            "Conditions" -> searchConditions(hbfVM, dndViewModel)
-            "Damage Types" -> searchDamageTypes(hbfVM, dndViewModel)
-            "Equipment Categories" -> searchEquipmentCategories(hbfVM, dndViewModel)
-            "Feats" -> searchFeats(dndViewModel)
-            "Features" -> searchFeatures(dndViewModel)
-            "Languages" -> searchLanguages(dndViewModel)
-            "Magic Items" -> searchMagicItems(dndViewModel)
-            "Magic Schools" -> searchMagicSchool(dndViewModel)
-            "Monsters" -> searchMonsters(dndViewModel)
-            "Proficiencies" -> searchProficiencies(dndViewModel)
-            "Races" -> searchRaces(dndViewModel)
-            "Rule Sections" -> searchRuleSections(dndViewModel)
-            "Rules" -> searchRules(dndViewModel)
-            "Skills" -> searchSkills(dndViewModel)
-            "Spells" -> searchSpells(dndViewModel)
-            "Subclasses" -> searchSubclasses(dndViewModel)
-            "Subraces" -> searchSubraces(dndViewModel)
-            "Traits" -> searchTraits(dndViewModel)
-            else -> searchWeaponProperties(dndViewModel)
+            "Alignments" -> SearchAlignments(hbfVM, dndViewModel)
+            "Backgrounds" -> SearchBackgrounds(hbfVM,dndViewModel)
+            "Classes" -> SearchClasses( hbfVM, dndViewModel)
+            "Conditions" -> SearchConditions(hbfVM, dndViewModel)
+            "Damage Types" -> SearchDamageTypes(hbfVM, dndViewModel)
+            "Equipment" -> SearchEquipment(hbfVM, dndViewModel)
+            "Feats" -> searchFeats(hbfVM, dndViewModel)
+            "Languages" -> searchLanguages(hbfVM, dndViewModel)
+            "Magic Items" -> searchMagicItems(hbfVM, dndViewModel)
+            "Magic Schools" -> searchMagicSchool(hbfVM, dndViewModel)
+            "Monsters" -> searchMonsters(hbfVM, dndViewModel)
+            "Proficiencies" -> searchProficiencies(hbfVM, dndViewModel)
+            "Races" -> searchRaces(hbfVM, dndViewModel)
+            "Rule Sections" -> searchRuleSections(hbfVM, dndViewModel)
+            "Rules" -> searchRules(hbfVM, dndViewModel)
+            "Skills" -> searchSkills(hbfVM, dndViewModel)
+            "Spells" -> searchSpells(hbfVM, dndViewModel)
+            "Subclasses" -> searchSubclasses(hbfVM, dndViewModel)
+            "Subraces" -> searchSubraces(hbfVM, dndViewModel)
+            "Traits" -> searchTraits(hbfVM, dndViewModel)
+            else -> searchWeaponProperties(hbfVM, dndViewModel)
         }
 
     }
@@ -217,7 +224,7 @@ fun ShowAbilityScore(abilityScore: AbilityScore, hbfVM : HBFViewModel, modifier:
 }
 
 @Composable
-fun searchAlignments(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchAlignments(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     LaunchedEffect(Unit) {
@@ -240,23 +247,27 @@ fun searchAlignments(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier:
 
     ) {
         items(items = dndViewModel.alignmentDnDObjects) { item ->
-            Card(
-                modifier = modifier.height(50.dp).requiredWidth(181.dp)
-            ) {
-                Row(
-                    modifier = modifier.fillMaxHeight(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+                Card(
+                    modifier = modifier.height(50.dp).requiredWidth(181.dp)
                 ) {
-                    TextButton(
-                        onClick = {
-                            hbfVM.setObjectToShow(item)
-                        },
-                        modifier.fillMaxSize()
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(item.name.uppercase() ,
-                            style = typography.bodyLarge,
-                            textAlign = TextAlign.Center)
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
@@ -291,7 +302,7 @@ fun ShowAlignment(alignment: AlignmentDnD, hbfVM : HBFViewModel, modifier: Modif
 }
 
 @Composable
-fun searchBackgrounds(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchBackgrounds(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     if(hbfUiState.showThisObject != null) {
@@ -314,23 +325,27 @@ fun searchBackgrounds(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier
 
     ) {
         items(items = dndViewModel.backgroundObjects) { item ->
-            Card(
-                modifier = modifier.height(50.dp).requiredWidth(181.dp)
-            ) {
-                Row(
-                    modifier = modifier.fillMaxHeight(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+                Card(
+                    modifier = modifier.height(50.dp).requiredWidth(181.dp)
                 ) {
-                    TextButton(
-                        onClick = {
-                            hbfVM.setObjectToShow(item)
-                        },
-                        modifier.fillMaxSize()
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(item.name.uppercase() ,
-                            style = typography.bodyLarge,
-                            textAlign = TextAlign.Center)
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
@@ -544,7 +559,7 @@ fun ShowBackground(background: Background, hbfVM : HBFViewModel, modifier: Modif
 }
 
 @Composable
-fun searchClasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchClasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     if(hbfUiState.showThisObject != null) {
@@ -568,23 +583,27 @@ fun searchClasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Mod
         contentPadding = PaddingValues(4.dp)
     ) {
         items(items = dndViewModel.classObjects) { item ->
-            Card(
-                modifier = modifier.height(50.dp).requiredWidth(181.dp)
-            ) {
-                Row(
-                    modifier = modifier.fillMaxHeight(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+                Card(
+                    modifier = modifier.height(50.dp).requiredWidth(181.dp)
                 ) {
-                    TextButton(
-                        onClick = {
-                            hbfVM.setObjectToShow(item)
-                        },
-                        modifier.fillMaxSize()
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(item.name.uppercase() ,
-                            style = typography.bodyLarge,
-                            textAlign = TextAlign.Center)
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
@@ -952,7 +971,7 @@ fun ShowClassLevel(level : ClassLevel, dndViewModel: DnDViewModel, modifier : Mo
 }
 
 @Composable
-fun searchConditions(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchConditions(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     if(hbfUiState.showThisObject != null) {
@@ -973,27 +992,30 @@ fun searchConditions(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: 
         contentPadding = PaddingValues(4.dp)
     ) {
         items(items = dndViewModel.conditionObjects) { item ->
-            Card(
-                modifier = modifier.height(50.dp).requiredWidth(181.dp)
-            ) {
-                Row(
-                    modifier = modifier.fillMaxHeight(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+                Card(
+                    modifier = modifier.height(50.dp).requiredWidth(181.dp)
                 ) {
-                    TextButton(
-                        onClick = {
-                            hbfVM.setObjectToShow(item)
-                        },
-                        modifier.fillMaxSize()
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(item.name.uppercase() ,
-                            style = typography.bodyLarge,
-                            textAlign = TextAlign.Center)
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
-
         }
     }
 }
@@ -1029,7 +1051,7 @@ fun ShowCondition(condition : Condition, hbfVM: HBFViewModel, modifier: Modifier
 }
 
 @Composable
-fun searchDamageTypes(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchDamageTypes(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     if(hbfUiState.showThisObject != null) {
@@ -1050,23 +1072,27 @@ fun searchDamageTypes(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier:
         contentPadding = PaddingValues(4.dp)
     ) {
         items(items = dndViewModel.damageTypeObjects) { item ->
-            Card(
-                modifier = modifier.height(50.dp).requiredWidth(181.dp)
-            ) {
-                Row(
-                    modifier = modifier.fillMaxHeight(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+                Card(
+                    modifier = modifier.height(50.dp).requiredWidth(181.dp)
                 ) {
-                    TextButton(
-                        onClick = {
-                            hbfVM.setObjectToShow(item)
-                        },
-                        modifier.fillMaxSize()
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(item.name.uppercase() ,
-                            style = typography.bodyLarge,
-                            textAlign = TextAlign.Center)
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
@@ -1119,8 +1145,72 @@ fun ShowEquipment(equipment: Equipment, hbfVM: HBFViewModel, modifier: Modifier 
                 verticalArrangement = Arrangement.SpaceAround
             ) {
                 Text(text = equipment.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+                Row(
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Text("${equipment.cost.quantity}${equipment.cost.unit}", style = typography.bodyMedium)
+                    if (equipment.quantity != null && equipment.quantity != 0) Text("x${equipment.quantity}", style = typography.bodyMedium)
+                    if (equipment.weight != null) Text("${equipment.weight}lbs", style = typography.bodyMedium)
+                }
+
+                if (equipment.speed != null) {
+                    if (equipment.speed.quantity != null && equipment.speed.unit != null) {
+                        Text("Speed: ${equipment.speed.quantity} ${equipment.speed.unit}", style = typography.bodyMedium)
+                    }
+                }
 
                 Spacer(modifier = modifier.height(10.dp))
+
+                if(equipment.armor_class != null) {
+                    var string = "${equipment.armor_class.base}"
+                    if (equipment.armor_class.dex_bonus) {
+                        string = string + " + DEX"
+                    }
+                    if (equipment.armor_class.max_bonus != null) {
+                        string = string + ", Max Bonus ${equipment.armor_class.max_bonus}"
+                    }
+                    Text("AC: ${string}", style = typography.bodyMedium)
+                }
+
+                if(equipment.str_minimum != null && equipment.str_minimum != 0) {
+                    Text("Min STR score to wield: ${equipment.str_minimum}",
+                        style = typography.bodyMedium)
+                }
+
+                if (equipment.weapon_range != null) {
+                    Text("Weapon Range: ${equipment.weapon_range}",
+                        style = typography.bodyMedium)
+                }
+
+                if (equipment.range != null) {
+                    Text("Range: ${equipment.range.normal}${if (equipment.range.long != null) " normal, ${equipment.range.long} long" else ""}",
+                        style = typography.bodyMedium)
+                }
+
+                if (equipment.throw_range != null) {
+                    Text("Throw Range: ${equipment.throw_range}${if (equipment.throw_range.long != null) " normal, ${equipment.throw_range.long} long" else ""}",
+                        style = typography.bodyMedium)
+                }
+
+                if (equipment.capacity != null) {
+                    Text("Capacity: ${equipment.capacity}",
+                        style = typography.bodyMedium)
+                }
+
+                if (equipment.damage != null) {
+                    Text("Damage: ${(equipment.damage as Damage.DamageObject).damage_dice} ${equipment.damage.damage_type}",
+                        style = typography.bodyMedium)
+                }
+
+                if (equipment.two_handed_damage != null) {
+                    Text("Two Handed Damage: ${(equipment.two_handed_damage as Damage.DamageObject).damage_dice} ${(equipment.two_handed_damage.damage_type?.name)}",
+                        style = typography.bodyMedium)
+                }
+
+                if (equipment.weapon_range != null) {
+                    Text("Weapon Range: ${equipment.weapon_range}",
+                        style = typography.bodyMedium)
+                }
 
                 for (desc in equipment.desc) {
                     Text(
@@ -1128,6 +1218,28 @@ fun ShowEquipment(equipment: Equipment, hbfVM: HBFViewModel, modifier: Modifier 
                         textAlign = TextAlign.Center
                     )
                 }
+
+                for (thing in equipment.special) {
+                    Text(
+                        text = thing, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                for (thing in equipment.contents) {
+                    Text(
+                        text = "${thing.item.name} x${thing.quantity}", style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                for (prop in equipment.properties) {
+                    Text(
+                        text = prop.name, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
             }
         }
 
@@ -1135,19 +1247,14 @@ fun ShowEquipment(equipment: Equipment, hbfVM: HBFViewModel, modifier: Modifier 
 }
 
 @Composable
-fun searchEquipmentCategories(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchEquipment(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
-    var showEquipment by remember {mutableStateOf(false)}
-    var thisCat : EquipmentCategory? by remember {mutableStateOf(null)}
 
     if(hbfUiState.showThisObject != null) {
         ShowEquipment((hbfUiState.showThisObject) as Equipment, hbfVM)
     }
 
     LaunchedEffect(Unit) {
-        if(dndViewModel.equipmentCategoryObjects.isEmpty()) {
-            dndViewModel.getEquipmentCategories()
-        }
         if(dndViewModel.equipmentObjects.isEmpty()) {
             dndViewModel.getEquipment()
         }
@@ -1158,23 +1265,80 @@ fun searchEquipmentCategories(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, m
         verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
     ) {
-        if (showEquipment) {
-            val equipmentInCat = mutableListOf<Equipment>()
-            val equipmentIndexes = mutableListOf<String>()
-
-            for (equipment in thisCat?.equipment!!) {
-                equipmentIndexes.add(equipment.index)
-            }
-
-            for (equipment in dndViewModel.equipmentObjects) {
-                if (equipmentIndexes.contains(equipment.index)) {
-                    equipmentInCat.add(equipment)
-                }
-            }
-
-            items(items = equipmentInCat) { item ->
+        items(items = dndViewModel.equipmentObjects) { item ->
+            if (item.name.lowercase().contains(hbfUiState.current_filter) || item.equipment_category.name.contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(65.dp).requiredWidth(181.dp)
+                ) {
+                    Row(
+                        modifier = modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (item.image != null) {
+//                            Log.d("MyTAG", "IMG: ${item.image}")
+                            AsyncImage(
+                                model = ImageRequest.Builder(context = LocalContext.current)
+                                    .data("https://www.dnd5eapi.co${item.image}")
+                                    .crossfade(true)
+                                    .listener(
+                                        onError = { request, result ->
+                                            // The request failed. 'result.throwable' contains the error.
+                                            Log.e("ImageLoader", "Loading image failed for URL: ${request.data}", result.throwable)
+                                        }
+                                    )
+                                    .build(),
+                                error = painterResource(R.drawable.ic_broken_image),
+                                placeholder = painterResource(R.drawable.loading_img),
+                                contentDescription = "",
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun searchFeats(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
+    if(hbfUiState.showThisObject != null) {
+        ShowFeat((hbfUiState.showThisObject) as Feat, hbfVM)
+    }
+
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
+
+        if(dndViewModel.featObjects.isEmpty()) {
+            dndViewModel.getFeats()
+        }
+    }
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+        contentPadding = PaddingValues(4.dp)
+
+    ) {
+        items(items = dndViewModel.featObjects) { item ->
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+                Card(
+                    modifier = modifier.height(50.dp).requiredWidth(181.dp)
                 ) {
                     Row(
                         modifier = modifier.fillMaxHeight(),
@@ -1196,10 +1360,126 @@ fun searchEquipmentCategories(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, m
                     }
                 }
             }
-        } else {
-            items(items = dndViewModel.equipmentCategoryObjects) { item ->
+        }
+    }
+}
+
+@Composable
+fun ShowFeat(feat: Feat, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = feat.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                for (desc in feat.desc) {
+                    Text(
+                        text = desc, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                if (!feat.prerequisites.isEmpty()) {
+                    var expand by remember { mutableStateOf(false)}
+
+                    TextButton(
+                        onClick = {
+                            expand = !expand
+                        },
+                    ) {
+                        Row() {
+                            Text(
+                                "Prerequisites", style = typography.bodyLarge, color = Color.Black, textAlign = TextAlign.Center
+                            )
+                            Icon(
+                                painter = painterResource(if (expand) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                                contentDescription = null,
+                                modifier = modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    if (expand) {
+                        for (prereq in feat.prerequisites) {
+                            if (prereq.type != null) {
+                                Text(
+                                    text = prereq.type, style = typography.bodyMedium,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                            if (prereq.spell != null) {
+                                Text(
+                                    text = prereq.spell, style = typography.bodyMedium,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                            if (prereq.level != null) {
+                                Text(
+                                    text = "Level ${prereq.level}", style = typography.bodyMedium,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                            if (prereq.feature != null) {
+                                Text(
+                                    text = prereq.feature, style = typography.bodyMedium,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                            if (prereq.ability_score != null && prereq.minimum_score != null) {
+                                Text(
+                                    text = "${prereq.ability_score.name} score minimum: ${prereq.minimum_score}", style = typography.bodyMedium,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+
+
+                }
+
+
+            }
+        }
+
+    }
+}
+
+@Composable
+fun searchLanguages(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
+    if(hbfUiState.showThisObject != null) {
+        ShowLanguage((hbfUiState.showThisObject) as Language, hbfVM)
+    }
+
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
+
+        if(dndViewModel.languageObjects.isEmpty()) {
+            dndViewModel.getLanguages()
+        }
+    }
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
+        contentPadding = PaddingValues(4.dp)
+
+    ) {
+        items(items = dndViewModel.languageObjects) { item ->
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
-                    modifier = modifier.height(65.dp).requiredWidth(181.dp)
+                    modifier = modifier.height(50.dp).requiredWidth(181.dp)
                 ) {
                     Row(
                         modifier = modifier.fillMaxHeight(),
@@ -1208,8 +1488,7 @@ fun searchEquipmentCategories(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, m
                     ) {
                         TextButton(
                             onClick = {
-                                thisCat = item
-                                showEquipment = true
+                                hbfVM.setObjectToShow(item)
                             },
                             modifier.fillMaxSize()
                         ) {
@@ -1226,89 +1505,54 @@ fun searchEquipmentCategories(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, m
     }
 }
 
+
 @Composable
-fun searchFeats( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    LaunchedEffect(Unit) {
-        Log.d("MyTAG", "In launched effect")
-
-        if(dndViewModel.featObjects.isEmpty()) {
-            dndViewModel.getFeats()
-        }
-    }
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(4.dp)
-
+fun ShowLanguage(lang: Language, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
     ) {
-        items(items = dndViewModel.featObjects) { item ->
-            Card(
-
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
             ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Text(text = lang.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
 
+                Spacer(modifier = modifier.height(10.dp))
+
+                if (lang.script != null) {
+                    Text(
+                        text = lang.script, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                var speakers = ""
+
+                for (desc in lang.typical_speakers) {
+                    speakers = speakers + desc + " "
+                }
+
+                Text(
+                    text = "Speakers: ${speakers}", style = typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+
+                if (lang.desc != null) Text(lang.desc, style = typography.bodyMedium, textAlign = TextAlign.Center)
             }
         }
+
     }
 }
 
 @Composable
-fun searchFeatures( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    LaunchedEffect(Unit) {
-        Log.d("MyTAG", "In launched effect")
+fun searchMagicItems(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
-        if(dndViewModel.featureObjects.isEmpty()) {
-            dndViewModel.getFeatures()
-        }
-    }
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(4.dp)
-
-    ) {
-        items(items = dndViewModel.featureObjects) { item ->
-            Card(
-
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
-
-            }
-        }
-    }
-}
-
-@Composable
-fun searchLanguages( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    LaunchedEffect(Unit) {
-        Log.d("MyTAG", "In launched effect")
-
-        if(dndViewModel.languageObjects.isEmpty()) {
-            dndViewModel.getLanguages()
-        }
-    }
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(4.dp)
-
-    ) {
-        items(items = dndViewModel.languageObjects) { item ->
-            Card(
-
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
-
-            }
-        }
-    }
-}
-
-@Composable
-fun searchMagicItems( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1323,19 +1567,23 @@ fun searchMagicItems( dndViewModel: DnDViewModel, modifier: Modifier = Modifier)
 
     ) {
         items(items = dndViewModel.magicItemObjects) { item ->
-            Card(
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+                Card(
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                ) {
+                    Text(item.name)
+                    // TODO: ADD SPECIFIC DATA LAYOUT
 
+                }
             }
         }
     }
 }
 
 @Composable
-fun searchMagicSchool( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchMagicSchool(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1350,19 +1598,24 @@ fun searchMagicSchool( dndViewModel: DnDViewModel, modifier: Modifier = Modifier
 
     ) {
         items(items = dndViewModel.magicSchoolObjects) { item ->
-            Card(
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Card(
 
+                ) {
+                    Text(item.name)
+                    // TODO: ADD SPECIFIC DATA LAYOUT
+
+                }
             }
         }
     }
 }
 
 @Composable
-fun searchMonsters( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchMonsters(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1377,19 +1630,24 @@ fun searchMonsters( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
     ) {
         items(items = dndViewModel.monsterObjects) { item ->
-            Card(
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Card(
 
+                ) {
+                    Text(item.name)
+                    // TODO: ADD SPECIFIC DATA LAYOUT
+
+                }
             }
         }
     }
 }
 
 @Composable
-fun searchProficiencies( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchProficiencies(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1404,19 +1662,24 @@ fun searchProficiencies( dndViewModel: DnDViewModel, modifier: Modifier = Modifi
 
     ) {
         items(items = dndViewModel.proficiencyObjects) { item ->
-            Card(
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Card(
 
+                ) {
+                    Text(item.name)
+                    // TODO: ADD SPECIFIC DATA LAYOUT
+
+                }
             }
         }
     }
 }
 
 @Composable
-fun searchRaces( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchRaces(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1431,19 +1694,24 @@ fun searchRaces( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
     ) {
         items(items = dndViewModel.raceObjects) { item ->
-            Card(
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Card(
 
+                ) {
+                    Text(item.name)
+                    // TODO: ADD SPECIFIC DATA LAYOUT
+
+                }
             }
         }
     }
 }
 
 @Composable
-fun searchRuleSections( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchRuleSections(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1458,19 +1726,24 @@ fun searchRuleSections( dndViewModel: DnDViewModel, modifier: Modifier = Modifie
 
     ) {
         items(items = dndViewModel.ruleSectionObjects) { item ->
-            Card(
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Card(
 
+                ) {
+                    Text(item.name)
+                    // TODO: ADD SPECIFIC DATA LAYOUT
+
+                }
             }
         }
     }
 }
 
 @Composable
-fun searchRules( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchRules(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1485,19 +1758,24 @@ fun searchRules( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
     ) {
         items(items = dndViewModel.ruleObjects) { item ->
-            Card(
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Card(
 
+                ) {
+                    Text(item.name)
+                    // TODO: ADD SPECIFIC DATA LAYOUT
+
+                }
             }
         }
     }
 }
 
 @Composable
-fun searchSkills( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchSkills(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1512,19 +1790,24 @@ fun searchSkills( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
     ) {
         items(items = dndViewModel.skillObjects) { item ->
-            Card(
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Card(
 
+                ) {
+                    Text(item.name)
+                    // TODO: ADD SPECIFIC DATA LAYOUT
+
+                }
             }
         }
     }
 }
 
 @Composable
-fun searchSpells( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchSpells(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1539,19 +1822,24 @@ fun searchSpells( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
     ) {
         items(items = dndViewModel.spellObjects) { item ->
-            Card(
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Card(
 
+                ) {
+                    Text(item.name)
+                    // TODO: ADD SPECIFIC DATA LAYOUT
+
+                }
             }
         }
     }
 }
 
 @Composable
-fun searchSubclasses( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchSubclasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1566,19 +1854,24 @@ fun searchSubclasses( dndViewModel: DnDViewModel, modifier: Modifier = Modifier)
 
     ) {
         items(items = dndViewModel.subclassObjects) { item ->
-            Card(
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Card(
 
+                ) {
+                    Text(item.name)
+                    // TODO: ADD SPECIFIC DATA LAYOUT
+
+                }
             }
         }
     }
 }
 
 @Composable
-fun searchSubraces( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchSubraces(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1593,19 +1886,24 @@ fun searchSubraces( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
     ) {
         items(items = dndViewModel.subraceObjects) { item ->
-            Card(
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Card(
 
+                ) {
+                    Text(item.name)
+                    // TODO: ADD SPECIFIC DATA LAYOUT
+
+                }
             }
         }
     }
 }
 
 @Composable
-fun searchTraits( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchTraits(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1620,19 +1918,24 @@ fun searchTraits( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
 
     ) {
         items(items = dndViewModel.traitObjects) { item ->
-            Card(
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Card(
 
+                ) {
+                    Text(item.name)
+                    // TODO: ADD SPECIFIC DATA LAYOUT
+
+                }
             }
         }
     }
 }
 
 @Composable
-fun searchWeaponProperties( dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun searchWeaponProperties(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1647,12 +1950,15 @@ fun searchWeaponProperties( dndViewModel: DnDViewModel, modifier: Modifier = Mod
 
     ) {
         items(items = dndViewModel.weaponPropertyObjects) { item ->
-            Card(
+            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
 
-            ) {
-                Text(item.name)
-                // TODO: ADD SPECIFIC DATA LAYOUT
+                Card(
 
+                ) {
+                    Text(item.name)
+                    // TODO: ADD SPECIFIC DATA LAYOUT
+
+                }
             }
         }
     }

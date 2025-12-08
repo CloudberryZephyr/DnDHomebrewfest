@@ -64,10 +64,13 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
     // Coil3 for AsyncImage
     implementation("io.coil-kt.coil3:coil-compose:3.0.0")
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.4") // Only available on Android/JVM.
+
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.volley)
+    implementation(libs.androidx.ui)
     debugImplementation(libs.androidx.ui.tooling)
 
     // add room library
