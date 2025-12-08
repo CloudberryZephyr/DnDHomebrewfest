@@ -1665,6 +1665,10 @@ fun ShowMagicItems(magicItem : MagicItem, hbfVM: HBFViewModel, modifier: Modifie
 fun searchMagicSchool(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
+    if(hbfUiState.showThisObject != null) {
+        ShowMagicSchool((hbfUiState.showThisObject) as MagicSchool, hbfVM)
+    }
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -1675,21 +1679,63 @@ fun searchMagicSchool(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier:
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
-
     ) {
         items(items = dndViewModel.magicSchoolObjects) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
-
                 Card(
-
+                    modifier = modifier.height(50.dp).requiredWidth(181.dp)
                 ) {
-                    Text(item.name)
-                    // TODO: ADD SPECIFIC DATA LAYOUT
-
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ShowMagicSchool(school: MagicSchool, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = school.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text(
+                    text = school.desc, style = typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+
     }
 }
 
