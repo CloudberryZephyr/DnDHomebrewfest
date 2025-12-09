@@ -1,6 +1,7 @@
 package com.example.dndhomebrewfest.screens
 
 import android.util.Log
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -120,9 +121,6 @@ fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
             "Magic Schools" -> searchMagicSchool(hbfVM, dndViewModel)
             "Monsters" -> searchMonsters(hbfVM, dndViewModel)
             "Races" -> searchRaces(hbfVM, dndViewModel)
-            "Rule Sections" -> searchRuleSections(hbfVM, dndViewModel)
-            "Rules" -> searchRules(hbfVM, dndViewModel)
-            "Skills" -> searchSkills(hbfVM, dndViewModel)
             "Spells" -> searchSpells(hbfVM, dndViewModel)
             "Subclasses" -> searchSubclasses(hbfVM, dndViewModel)
             "Subraces" -> searchSubraces(hbfVM, dndViewModel)
@@ -1754,20 +1752,53 @@ fun searchMonsters(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Mo
         }
     }
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Fixed(1),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
-
     ) {
         items(items = dndViewModel.monsterObjects) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
-
                 Card(
-
+                    modifier = modifier.height(65.dp).requiredWidth(250.dp)
                 ) {
-                    Text(item.name)
-                    // TODO: ADD SPECIFIC DATA LAYOUT
-
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (item.image != null) {
+//                            Log.d("MyTAG", "IMG: ${item.image}")
+                            AsyncImage(
+                                model = ImageRequest.Builder(context = LocalContext.current)
+                                    .data("https://www.dnd5eapi.co${item.image}")
+                                    .crossfade(true)
+                                    .listener(
+                                        onError = { request, result ->
+                                            // The request failed. 'result.throwable' contains the error.
+                                            Log.e("ImageLoader", "Loading image failed for URL: ${request.data}", result.throwable)
+                                        }
+                                    )
+                                    .build(),
+                                error = painterResource(R.drawable.ic_broken_image),
+                                placeholder = painterResource(R.drawable.loading_img),
+                                contentDescription = "",
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -1775,8 +1806,267 @@ fun searchMonsters(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Mo
 }
 
 @Composable
-fun ShowMonster(monster: Monster, hbfVM: HBFViewModel) {
+fun ShowMonster(monster: Monster, hbfVM: HBFViewModel, modifier : Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp).verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = monster.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
 
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text("${monster.size} ${monster.type}${if(monster.subtype != null) " " + monster.subtype else ""} CR ${monster.challenge_rating}",
+                    style = typography.bodyMedium)
+
+                Text(monster.alignment, style = typography.bodyMedium)
+
+                Text("${monster.hit_points}hp (${monster.hit_points_roll}) AC ${monster.armor_class[0].value}", style = typography.bodyMedium)
+
+                Text("Speed: ${if(monster.speed.walk != null) "walk ${monster.speed.walk}" else ""}" +
+                        (if(monster.speed.swim != null) "swim ${monster.speed.swim}" else "") +
+                        (if(monster.speed.fly != null) "fly ${monster.speed.fly}" else "") +
+                        (if(monster.speed.burrow != null) "burrow ${monster.speed.burrow}" else "") +
+                        (if(monster.speed.climb != null) "climb ${monster.speed.climb}" else "") +
+                        if(monster.speed.hover != null) "hover ${monster.speed.hover}" else "",
+                    style = typography.bodyMedium, textAlign = TextAlign.Center
+                )
+
+                Text("Proficiency Bonus: +${monster.proficiency_bonus}", style = typography.bodyMedium)
+
+                Spacer(modifier.height(10.dp))
+
+                Text("STR: ${monster.strength} DEX: ${monster.dexterity}", style = typography.bodyMedium)
+                Text("CON: ${monster.constitution} INT: ${monster.intelligence}", style = typography.bodyMedium)
+                Text("WIS: ${monster.wisdom} CHA: ${monster.constitution}", style = typography.bodyMedium)
+
+                Spacer(modifier.height(10.dp))
+
+                Text("Languages: ${if (monster.languages != "") monster.languages else "none"}", style = typography.bodyMedium, textAlign = TextAlign.Center)
+
+                if (!monster.proficiencies.isEmpty()) {
+
+                    var expandProficiencies by remember { mutableStateOf(false) }
+
+                    TextButton(
+                        onClick = {
+                            expandProficiencies = !expandProficiencies
+                        },
+                    ) {
+                        Row() {
+                            Text(text = "Proficiencies:")
+                            Icon(
+                                painter = painterResource(if (expandProficiencies) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                                contentDescription = null,
+                                modifier = modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    if (expandProficiencies) {
+                        for (p in monster.proficiencies) {
+                            Text(
+                                text = "${p.proficiency.name} +${p.value}",
+                                style = typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                modifier = modifier.padding(horizontal = 25.dp)
+                            )
+                        }
+                    }
+                }
+
+                if (!monster.damage_vulnerabilities.isEmpty()) {
+                    Text("Vulnerabilities:")
+                    for (p in monster.damage_vulnerabilities) {
+                        Text(
+                            text = p, style = typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            modifier = modifier.padding(horizontal = 25.dp)
+                        )
+                    }
+                    Spacer(modifier.height(10.dp))
+                }
+
+                if (!monster.damage_resistances.isEmpty()) {
+                    Text("Resistances:")
+                    for (p in monster.damage_resistances) {
+                        Text(
+                            text = p, style = typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            modifier = modifier.padding(horizontal = 25.dp)
+                        )
+                    }
+
+                    Spacer(modifier.height(10.dp))
+                }
+
+                if (!monster.damage_immunities.isEmpty()) {
+                    Text("Immunities:")
+                    for (p in monster.damage_immunities) {
+                        Text(
+                            text = p, style = typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            modifier = modifier.padding(horizontal = 25.dp)
+                        )
+                    }
+                    for (p in monster.condition_immunities) {
+                        Text(
+                            text = p.name, style = typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            modifier = modifier.padding(horizontal = 25.dp)
+                        )
+                    }
+                    Spacer(modifier.height(10.dp))
+                }
+
+                Text("Senses:")
+                for (k in monster.senses.keys) {
+                    Text(
+                        text = "$k ${monster.senses[k]}", style = typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = modifier.padding( horizontal = 25.dp)
+                    )
+                }
+
+                if (monster.desc != null) {
+                    Text(
+                        text = monster.desc, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                var expandAbilities by remember { mutableStateOf(false) }
+
+                TextButton(
+                    onClick = {
+                        expandAbilities = !expandAbilities
+                    },
+                ) {
+                    Row() {
+                        Text(text = "Abilities:")
+                        Icon(
+                            painter = painterResource(if (expandAbilities) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                            contentDescription = null,
+                            modifier = modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                if (expandAbilities) {
+                    for (ability in monster.special_abilities) {
+                        var expand by remember { mutableStateOf(false) }
+
+                        TextButton(
+                            onClick = {
+                                expand = !expand
+                            },
+                        ) {
+                            Row() {
+                                Text(text = ability.name)
+                                Icon(
+                                    painter = painterResource(if (expand) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                                    contentDescription = null,
+                                    modifier = modifier.size(20.dp)
+                                )
+                            }
+                        }
+
+                        if (expand) {
+//                            if (ability.dc != null) {
+//                                Text("DC: ${ability.dc}")
+//                            }
+//
+//
+//
+//                            if(ability.usage != null) {
+//                                var usage = ""
+//
+//                                if (ability.usage.times != null) usage = usage + ability.usage.times
+//                                if (ability.usage.dice != null) usage = usage + ability.usage.dice
+//                                usage = usage + ability.usage.type
+//                                if (ability.usage.rest_types !== null && !ability.usage.rest_types.isEmpty()) {
+//                                    usage = usage + ", regained on" + ability.usage.rest_types.joinToString()
+//                                }
+//                                if (ability.usage.min_value != null) usage = usage + ", min value " + ability.usage.min_value
+//
+//                                Text(usage, style = typography.bodyMedium, textAlign = TextAlign.Center)
+//                            }
+//
+//                            if (ability.actions != null) {
+//                                Text(ability.actions.name, style = typography.bodyMedium)
+//                            }
+//
+//                            if (ability.spellcasting != null) {
+//                                Text("Spells:")
+//                                for (spell in ability.spellcasting.spells) {
+//                                    Text("Level ${spell.level} ${spell.name}")
+//                                }
+//                            }
+
+                            if (ability.desc != null) {
+                                Text(ability.desc, style = typography.bodyMedium)
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier.height(10.dp))
+
+                var expandActions by remember { mutableStateOf(false) }
+
+                TextButton(
+                    onClick = {
+                        expandActions = !expandActions
+                    },
+                ) {
+                    Row() {
+                        Text(text = "Actions:")
+                        Icon(
+                            painter = painterResource(if (expandActions) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                            contentDescription = null,
+                            modifier = modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                if (expandActions) {
+                    // actions
+                    if (!monster.actions.isEmpty()) {
+                        showActions(monster.actions)
+                    }
+                    // reactions
+                    if (!monster.reactions.isEmpty()) {
+                        Text("Reactions:")
+                        showActions(monster.reactions)
+                    }
+                    // legendary actions
+                    if (!monster.legendary_actions.isEmpty()) {
+                        Text("Legendary Actions:")
+                        showActions(monster.legendary_actions)
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
+fun showActions(actions : List<Action>, modifier : Modifier = Modifier) {
+    Column(modifier.fillMaxWidth()) {
+        for (action in actions) {
+            Text("${if (action.name != null) action.name else action.action_name}: ${action.desc}",
+                style = typography.bodyMedium, textAlign = TextAlign.Center)
+            Spacer(modifier.height(10.dp))
+        }
+    }
 }
 
 @Composable
@@ -1925,102 +2215,6 @@ fun ShowRace(race: Race, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
             }
         }
 
-    }
-}
-
-@Composable
-fun searchRuleSections(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
-
-    LaunchedEffect(Unit) {
-        Log.d("MyTAG", "In launched effect")
-
-        if(dndViewModel.ruleSectionObjects.isEmpty()) {
-            dndViewModel.getRuleSections()
-        }
-    }
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(4.dp)
-
-    ) {
-        items(items = dndViewModel.ruleSectionObjects) { item ->
-            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
-
-                Card(
-
-                ) {
-                    Text(item.name)
-                    // TODO: ADD SPECIFIC DATA LAYOUT
-
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun searchRules(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
-
-    LaunchedEffect(Unit) {
-        Log.d("MyTAG", "In launched effect")
-
-        if(dndViewModel.ruleObjects.isEmpty()) {
-            dndViewModel.getRules()
-        }
-    }
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(4.dp)
-
-    ) {
-        items(items = dndViewModel.ruleObjects) { item ->
-            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
-
-                Card(
-
-                ) {
-                    Text(item.name)
-                    // TODO: ADD SPECIFIC DATA LAYOUT
-
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun searchSkills(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
-
-    LaunchedEffect(Unit) {
-        Log.d("MyTAG", "In launched effect")
-
-        if(dndViewModel.skillObjects.isEmpty()) {
-            dndViewModel.getSkills()
-        }
-    }
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(4.dp)
-
-    ) {
-        items(items = dndViewModel.skillObjects) { item ->
-            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
-
-                Card(
-
-                ) {
-                    Text(item.name)
-                    // TODO: ADD SPECIFIC DATA LAYOUT
-
-                }
-            }
-        }
     }
 }
 
