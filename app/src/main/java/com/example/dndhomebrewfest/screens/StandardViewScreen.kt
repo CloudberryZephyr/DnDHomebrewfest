@@ -1,7 +1,6 @@
 package com.example.dndhomebrewfest.screens
 
 import android.util.Log
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,11 +39,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.dndhomebrewfest.R
@@ -52,14 +49,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import coil3.request.lifecycle
 import com.example.dndhomebrewfest.HBFUiState
-import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
 import com.example.dndhomebrewfest.viewmodels.*
 import com.example.dndhomebrewfest.viewmodels.AlignmentDnD
 import com.example.dndhomebrewfest.viewmodels.Background
-import com.example.dndhomebrewfest.viewmodels.BackgroundFeature
-import com.example.dndhomebrewfest.viewmodels.Choice
 import com.example.dndhomebrewfest.viewmodels.Class
 import com.example.dndhomebrewfest.viewmodels.ClassLevel
 import com.example.dndhomebrewfest.viewmodels.Condition
@@ -67,14 +60,10 @@ import com.example.dndhomebrewfest.viewmodels.Damage
 import com.example.dndhomebrewfest.viewmodels.DamageType
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
 import com.example.dndhomebrewfest.viewmodels.Equipment
-import com.example.dndhomebrewfest.viewmodels.EquipmentCategory
-import com.example.dndhomebrewfest.viewmodels.Equipments
 import com.example.dndhomebrewfest.viewmodels.Feat
 import com.example.dndhomebrewfest.viewmodels.Feature
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
-import com.example.dndhomebrewfest.viewmodels.ObjectReference
 import com.example.dndhomebrewfest.viewmodels.Option
-import com.example.dndhomebrewfest.viewmodels.OptionsSet
 import java.util.stream.IntStream.range
 
 @Composable
@@ -147,6 +136,13 @@ fun SearchAbilityScores(hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modifi
         }
     }
 
+    val filteredList = mutableListOf<AbilityScore>()
+
+    for (item in dndViewModel.abilityScoreObjects) {
+        if (item.full_name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -155,27 +151,24 @@ fun SearchAbilityScores(hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modifi
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = dndViewModel.abilityScoreObjects) { item ->
-
-            if (item.full_name.lowercase().contains(hbfUiState.current_filter)) {
-                Card(
-                modifier = modifier.height(50.dp).requiredWidth(181.dp)
+        items(items = filteredList) { item ->
+            Card(
+            modifier = modifier.height(50.dp).requiredWidth(181.dp)
+            ) {
+                Row(
+                    modifier = modifier.fillMaxHeight(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = modifier.fillMaxHeight(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
+                    TextButton(
+                        onClick = {
+                            hbfVM.setObjectToShow(item)
+                        },
+                        modifier.fillMaxSize()
                     ) {
-                        TextButton(
-                            onClick = {
-                                hbfVM.setObjectToShow(item)
-                            },
-                            modifier.fillMaxSize()
-                        ) {
-                            Text(item.full_name.uppercase(),
-                                style = typography.bodyLarge,
-                                textAlign = TextAlign.Center)
-                        }
+                        Text(item.full_name.uppercase(),
+                            style = typography.bodyLarge,
+                            textAlign = TextAlign.Center)
                     }
                 }
             }
@@ -235,6 +228,14 @@ fun SearchAlignments(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier:
         ShowAlignment((hbfUiState.showThisObject) as AlignmentDnD, hbfVM)
     }
 
+    val filteredList = mutableListOf<AlignmentDnD>()
+
+    for (item in dndViewModel.alignmentDnDObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
@@ -242,28 +243,26 @@ fun SearchAlignments(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier:
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = dndViewModel.alignmentDnDObjects) { item ->
-            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
-                Card(
-                    modifier = modifier.height(50.dp).requiredWidth(181.dp)
+        items(items = filteredList) { item ->
+            Card(
+                modifier = modifier.height(50.dp).requiredWidth(181.dp)
+            ) {
+                Row(
+                    modifier = modifier.fillMaxHeight(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = modifier.fillMaxHeight(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
+                    TextButton(
+                        onClick = {
+                            hbfVM.setObjectToShow(item)
+                        },
+                        modifier.fillMaxSize()
                     ) {
-                        TextButton(
-                            onClick = {
-                                hbfVM.setObjectToShow(item)
-                            },
-                            modifier.fillMaxSize()
-                        ) {
-                            Text(
-                                item.name.uppercase(),
-                                style = typography.bodyLarge,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                        Text(
+                            item.name.uppercase(),
+                            style = typography.bodyLarge,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }
@@ -313,6 +312,14 @@ fun SearchBackgrounds(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier
         }
     }
 
+    val filteredList = mutableListOf<Background>()
+
+    for (item in dndViewModel.backgroundObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
@@ -320,7 +327,7 @@ fun SearchBackgrounds(hbfVM : HBFViewModel, dndViewModel: DnDViewModel, modifier
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = dndViewModel.backgroundObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(50.dp).requiredWidth(181.dp)
@@ -572,13 +579,22 @@ fun SearchClasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Mod
             dndViewModel.getFeatures()
         }
     }
+
+    val filteredList = mutableListOf<Class>()
+
+    for (item in dndViewModel.classObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
     ) {
-        items(items = dndViewModel.classObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(50.dp).requiredWidth(181.dp)
@@ -981,13 +997,22 @@ fun SearchConditions(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: 
             dndViewModel.getConditions()
         }
     }
+
+    val filteredList = mutableListOf<Condition>()
+
+    for (item in dndViewModel.conditionObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
     ) {
-        items(items = dndViewModel.conditionObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(50.dp).requiredWidth(181.dp)
@@ -1061,13 +1086,22 @@ fun SearchDamageTypes(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier:
             dndViewModel.getDamageTypes()
         }
     }
+
+    val filteredList = mutableListOf<DamageType>()
+
+    for (item in dndViewModel.damageTypeObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
     ) {
-        items(items = dndViewModel.damageTypeObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(50.dp).requiredWidth(181.dp)
@@ -1255,13 +1289,22 @@ fun SearchEquipment(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: M
             dndViewModel.getEquipment()
         }
     }
+
+    val filteredList = mutableListOf<Equipment>()
+
+    for (item in dndViewModel.equipmentObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
     ) {
-        items(items = dndViewModel.equipmentObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter) || item.equipment_category.name.contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(65.dp).requiredWidth(181.dp)
@@ -1324,6 +1367,15 @@ fun SearchFeats(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modif
             dndViewModel.getFeats()
         }
     }
+
+    val filteredList = mutableListOf<Feat>()
+
+    for (item in dndViewModel.featObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
@@ -1331,7 +1383,7 @@ fun SearchFeats(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modif
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = dndViewModel.featObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(50.dp).requiredWidth(181.dp)
@@ -1465,6 +1517,15 @@ fun SearchLanguages(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: M
             dndViewModel.getLanguages()
         }
     }
+
+    val filteredList = mutableListOf<Language>()
+
+    for (item in dndViewModel.languageObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
@@ -1472,7 +1533,7 @@ fun SearchLanguages(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: M
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = dndViewModel.languageObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(50.dp).requiredWidth(181.dp)
@@ -1559,6 +1620,15 @@ fun SearchMagicItems(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: 
             dndViewModel.getMagicItems()
         }
     }
+
+    val filteredList = mutableListOf<MagicItem>()
+
+    for (item in dndViewModel.magicItemObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(1),
         modifier = modifier.fillMaxSize(),
@@ -1566,7 +1636,7 @@ fun SearchMagicItems(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: 
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = dndViewModel.magicItemObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(65.dp).requiredWidth(250.dp)
@@ -1672,13 +1742,22 @@ fun SearchMagicSchool(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier:
             dndViewModel.getMagicSchools()
         }
     }
+
+    val filteredList = mutableListOf<MagicSchool>()
+
+    for (item in dndViewModel.magicSchoolObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
     ) {
-        items(items = dndViewModel.magicSchoolObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(50.dp).requiredWidth(181.dp)
@@ -1750,13 +1829,22 @@ fun SearchMonsters(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Mo
             dndViewModel.getMonsters()
         }
     }
+
+    val filteredList = mutableListOf<Monster>()
+
+    for (item in dndViewModel.monsterObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(1),
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
     ) {
-        items(items = dndViewModel.monsterObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(65.dp).requiredWidth(250.dp)
@@ -2081,13 +2169,22 @@ fun SearchRaces(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modif
             dndViewModel.getSubraces()
         }
     }
+
+    val filteredList = mutableListOf<Race>()
+
+    for (item in dndViewModel.raceObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
     ) {
-        items(items = dndViewModel.raceObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(50.dp).requiredWidth(181.dp)
@@ -2271,6 +2368,15 @@ fun SearchSpells(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modi
             dndViewModel.getSpells()
         }
     }
+
+    val filteredList = mutableListOf<Spell>()
+
+    for (item in dndViewModel.spellObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
@@ -2278,7 +2384,7 @@ fun SearchSpells(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modi
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = dndViewModel.spellObjects) { item ->
+        items(items = filteredList) { item ->
             val classes = mutableListOf<String>()
 
             for (classRef in item.classes) {
@@ -2397,6 +2503,15 @@ fun SearchSubclasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: 
             dndViewModel.getFeatures()
         }
     }
+
+    val filteredList = mutableListOf<Subclass>()
+
+    for (item in dndViewModel.subclassObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
@@ -2404,7 +2519,7 @@ fun SearchSubclasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: 
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = dndViewModel.subclassObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(50.dp).requiredWidth(181.dp)
@@ -2593,6 +2708,15 @@ fun SearchTraits(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modi
             dndViewModel.getTraits()
         }
     }
+
+    val filteredList = mutableListOf<Trait>()
+
+    for (item in dndViewModel.traitObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
@@ -2600,7 +2724,7 @@ fun SearchTraits(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modi
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = dndViewModel.traitObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(65.dp).requiredWidth(181.dp)
@@ -2681,6 +2805,15 @@ fun SearchWeaponProperties(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modi
             dndViewModel.getWeaponProperties()
         }
     }
+
+    val filteredList = mutableListOf<WeaponProperty>()
+
+    for (item in dndViewModel.weaponPropertyObjects) {
+        if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            filteredList.add(item)
+        }
+    }
+
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
@@ -2688,7 +2821,7 @@ fun SearchWeaponProperties(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modi
         contentPadding = PaddingValues(4.dp)
 
     ) {
-        items(items = dndViewModel.weaponPropertyObjects) { item ->
+        items(items = filteredList) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
                 Card(
                     modifier = modifier.height(65.dp).requiredWidth(181.dp)
