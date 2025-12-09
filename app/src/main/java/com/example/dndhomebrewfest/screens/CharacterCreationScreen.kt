@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
@@ -22,12 +24,30 @@ enum class StatMethod{
     POINTBUY
 }
 
+enum class Step{
+    ONE,
+    TWO,
+    THREE,
+    FOUR,
+    FIVE,
+    SIX
+}
+
 @Composable
 fun CharacterCreationScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
     val hbfUIState by hbfVM.uiState.collectAsState()
     val dndViewModel : DnDViewModel = viewModel()
+    val step : Step = Step.ONE
 
     // TODO: Step 1: Class
+    if(step == Step.ONE){
+        Column(modifier = modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Text(dndViewModel.classObjects.toString())
+        }
+    }
 
     // Step 2: Stats
     // TODO: Implement choosing between stat generation methods
