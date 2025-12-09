@@ -1160,12 +1160,12 @@ fun ShowEquipment(equipment: Equipment, hbfVM: HBFViewModel, modifier: Modifier 
                 if(equipment.armor_class != null) {
                     var string = "${equipment.armor_class.base}"
                     if (equipment.armor_class.dex_bonus) {
-                        string = string + " + DEX"
+                        string = "$string + DEX"
                     }
                     if (equipment.armor_class.max_bonus != null) {
-                        string = string + ", Max Bonus ${equipment.armor_class.max_bonus}"
+                        string += ", Max Bonus ${equipment.armor_class.max_bonus}"
                     }
-                    Text("AC: ${string}", style = typography.bodyMedium)
+                    Text("AC: $string", style = typography.bodyMedium)
                 }
 
                 if(equipment.str_minimum != null && equipment.str_minimum != 0) {
@@ -1529,11 +1529,11 @@ fun ShowLanguage(lang: Language, hbfVM: HBFViewModel, modifier: Modifier = Modif
                 var speakers = ""
 
                 for (desc in lang.typical_speakers) {
-                    speakers = speakers + desc + " "
+                    speakers = "$speakers$desc "
                 }
 
                 Text(
-                    text = "Speakers: ${speakers}", style = typography.bodyMedium,
+                    text = "Speakers: $speakers", style = typography.bodyMedium,
                     textAlign = TextAlign.Center
                 )
 
@@ -1649,7 +1649,7 @@ fun ShowMagicItems(magicItem : MagicItem, hbfVM: HBFViewModel, modifier: Modifie
                         variants = variants + ", " + variant.name
                     }
 
-                    Text("Variants: ${variants}", style = typography.bodyMedium, textAlign = TextAlign.Center)
+                    Text("Variants: $variants", style = typography.bodyMedium, textAlign = TextAlign.Center)
                 }
             }
         }
@@ -1766,25 +1766,22 @@ fun SearchMonsters(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Mo
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (item.image != null) {
-//                            Log.d("MyTAG", "IMG: ${item.image}")
-                            AsyncImage(
-                                model = ImageRequest.Builder(context = LocalContext.current)
-                                    .data("https://www.dnd5eapi.co${item.image}")
-                                    .crossfade(true)
-                                    .listener(
-                                        onError = { request, result ->
-                                            // The request failed. 'result.throwable' contains the error.
-                                            Log.e("ImageLoader", "Loading image failed for URL: ${request.data}", result.throwable)
-                                        }
-                                    )
-                                    .build(),
-                                error = painterResource(R.drawable.ic_broken_image),
-                                placeholder = painterResource(R.drawable.loading_img),
-                                contentDescription = "",
-                                contentScale = ContentScale.Fit
-                            )
-                        }
+                        AsyncImage(
+                            model = ImageRequest.Builder(context = LocalContext.current)
+                                .data("https://www.dnd5eapi.co${item.image}")
+                                .crossfade(true)
+                                .listener(
+                                    onError = { request, result ->
+                                        // The request failed. 'result.throwable' contains the error.
+                                        Log.e("ImageLoader", "Loading image failed for URL: ${request.data}", result.throwable)
+                                    }
+                                )
+                                .build(),
+                            error = painterResource(R.drawable.ic_broken_image),
+                            placeholder = painterResource(R.drawable.loading_img),
+                            contentDescription = "",
+                            contentScale = ContentScale.Fit
+                        )
                         TextButton(
                             onClick = {
                                 hbfVM.setObjectToShow(item)
@@ -2009,9 +2006,7 @@ fun ShowMonster(monster: Monster, hbfVM: HBFViewModel, modifier : Modifier = Mod
 //                                }
 //                            }
 
-                            if (ability.desc != null) {
-                                Text(ability.desc, style = typography.bodyMedium)
-                            }
+                            Text(ability.desc, style = typography.bodyMedium)
                         }
                     }
                 }
@@ -2061,7 +2056,7 @@ fun ShowMonster(monster: Monster, hbfVM: HBFViewModel, modifier : Modifier = Mod
 fun ShowActions(actions : List<Action>, modifier : Modifier = Modifier) {
     Column(modifier.fillMaxWidth()) {
         for (action in actions) {
-            Text("${if (action.name != null) action.name else action.action_name}: ${action.desc}",
+            Text("${action.name ?: action.action_name}: ${action.desc}",
                 style = typography.bodyMedium, textAlign = TextAlign.Center)
             Spacer(modifier.height(10.dp))
         }
@@ -2150,7 +2145,7 @@ fun ShowRace(race: Race, hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modif
 
                     var options: String = ((race.ability_bonus_options.from.options)?.get(0) as Option.OptionObject).ability_score?.name ?: ""
 
-                    for (option in race.ability_bonus_options.from.options?.subList(1,race.ability_bonus_options.from.options.size-1)!!) {
+                    for (option in race.ability_bonus_options.from.options.subList(1,race.ability_bonus_options.from.options.size-1)) {
                         options = options + ", " + (option as Option.OptionObject).ability_score?.name
                     }
 
@@ -2174,7 +2169,7 @@ fun ShowRace(race: Race, hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modif
                     langs = langs + ", " + lang.name
                 }
 
-                Text("Languages: ${langs}", style = typography.bodyMedium, textAlign = TextAlign.Center)
+                Text("Languages: $langs", style = typography.bodyMedium, textAlign = TextAlign.Center)
 
                 if (race.language_options != null) {
                     Text(race.language_desc, style = typography.bodyMedium)
@@ -2192,7 +2187,7 @@ fun ShowRace(race: Race, hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modif
 
                 Text("Traits:", style = typography.bodyMedium)
 
-                var traits: String = race.traits.get(0).name
+                var traits: String = race.traits[0].name
 
                 for (option in race.traits.subList(1,race.traits.size-1)) {
                     traits = traits + ", " + option.name
@@ -2202,13 +2197,13 @@ fun ShowRace(race: Race, hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modif
 
                 Spacer(modifier.height(10.dp))
 
-                if (race.subraces.size > 0) {
+                if (race.subraces.isNotEmpty()) {
                     Text("Subraces:", style = typography.bodyMedium)
 
                     for (subraceRef in race.subraces) {
                         var subrace : Subrace? = null
                         for (sub in dndViewModel.subraceObjects) {
-                            if (subraceRef.index.equals(sub.index)) {
+                            if (subraceRef.index == sub.index) {
                                 subrace = sub
                                 break
                             }
@@ -2675,6 +2670,10 @@ fun ShowTrait(trait: Trait, hbfVM: HBFViewModel, modifier: Modifier = Modifier) 
 fun SearchWeaponProperties(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
+    if(hbfUiState.showThisObject != null) {
+        ShowWeaponProperty((hbfUiState.showThisObject) as WeaponProperty, hbfVM)
+    }
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -2685,18 +2684,62 @@ fun SearchWeaponProperties(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modi
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
 
     ) {
         items(items = dndViewModel.weaponPropertyObjects) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
-
                 Card(
-
+                    modifier = modifier.height(65.dp).requiredWidth(181.dp)
                 ) {
-                    Text(item.name)
-                    // TODO: ADD SPECIFIC DATA LAYOUT
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
+@Composable
+fun ShowWeaponProperty(weaponProp: WeaponProperty, hbfVM : HBFViewModel, modifier: Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = weaponProp.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                for (desc in weaponProp.desc) {
+                    Text(
+                        text = desc, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }
