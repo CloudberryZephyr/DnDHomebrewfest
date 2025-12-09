@@ -2345,33 +2345,201 @@ fun ShowSpell(spell: Spell, hbfVM: HBFViewModel, modifier: Modifier = Modifier) 
 fun searchSubclasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
+    if(hbfUiState.showThisObject != null) {
+        ShowSubclass((hbfUiState.showThisObject) as Subclass, dndViewModel, hbfVM)
+    }
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
         if(dndViewModel.subclassObjects.isEmpty()) {
             dndViewModel.getSubclasses()
         }
+        if(dndViewModel.featureObjects.isEmpty()) {
+            dndViewModel.getFeatures()
+        }
     }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
 
     ) {
         items(items = dndViewModel.subclassObjects) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
-
                 Card(
-
+                    modifier = modifier.height(50.dp).requiredWidth(181.dp)
                 ) {
-                    Text(item.name)
-                    // TODO: ADD SPECIFIC DATA LAYOUT
-
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 }
+
+@Composable
+fun ShowSubclass(subclass : Subclass, dndViewModel: DnDViewModel, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
+    LaunchedEffect(Unit) {
+        Log.d("MyTAG", "In launched effect")
+        dndViewModel.getSubclassLevels(subclass.index)
+    }
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp).verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = subclass.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text("${subclass.req_class.name} Subclass")
+                Text(subclass.subclass_flavor, style = typography.bodyMedium)
+
+                Spacer(modifier.height(10.dp))
+
+                for (desc in subclass.desc) {
+                    Text(desc, style = typography.bodyMedium, textAlign = TextAlign.Center)
+                }
+
+                if (!subclass.spells.isEmpty()) {
+                    var expandSpells by remember { mutableStateOf(false) }
+
+                    TextButton(
+                        onClick = {
+                            expandSpells = !expandSpells
+                        },
+                    ) {
+                        Row() {
+                            Text(text = "Spells:")
+                            Icon(
+                                painter = painterResource(if (expandSpells) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                                contentDescription = null,
+                                modifier = modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    if (expandSpells) {
+                        for (spell in subclass.spells) {
+                            Text("${spell.prerequisites[0].name} - ${spell.spell.name}",
+                                style = typography.bodyMedium, textAlign = TextAlign.Center)
+                        }
+                    }
+
+                    for (level in dndViewModel.subclassLevelObjects) {
+                        ShowSubclassLevel(level, dndViewModel)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ShowSubclassLevel(level : SubclassLevel, dndViewModel: DnDViewModel, modifier : Modifier = Modifier) {
+    var expand by remember {mutableStateOf(false)}
+
+    LaunchedEffect(Unit) {
+        if(dndViewModel.featureObjects.isEmpty()) {
+            dndViewModel.getFeatures()
+        }
+    }
+
+    Column(
+        modifier = modifier.padding(horizontal = 15.dp).fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        TextButton(
+            onClick = {
+                expand = !expand
+            },
+        ) {
+            Row() {
+                Text("Level ${level.level}", style = typography.bodyLarge,
+                    textDecoration = TextDecoration.Underline)
+                Icon(
+                    painter = painterResource(if (expand) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                    contentDescription = null,
+                    modifier = modifier.size(20.dp)
+                )
+            }
+        }
+
+        if (expand) {
+
+            if (level.subclass_specific != null) {
+                Text("Aura Range: ${level.subclass_specific.aura_range}")
+            }
+
+            // get the indexes of the features specific to this level
+            val featureList : MutableList<Feature> = mutableListOf()
+            for (subclassfeature in level.features) {
+                for (feature in dndViewModel.featureObjects) {
+                    if (subclassfeature.index == feature.index) {
+                        featureList.add(feature)
+                    }
+                }
+            }
+
+            Log.d("MyTAG", featureList.size.toString())
+
+            for (feature in featureList) {
+
+                var expandFeature by remember { mutableStateOf(false) }
+
+                TextButton(
+                    onClick = {
+                        expandFeature = !expandFeature
+                    },
+                ) {
+                    Row() {
+                        Text(
+                            feature.name, style = typography.bodyLarge, color = Color.Black, textAlign = TextAlign.Center
+                        )
+                        Icon(
+                            painter = painterResource(if (expandFeature) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                            contentDescription = null,
+                            modifier = modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                if (expandFeature) {
+                    for (desc in feature.desc) {
+                        Text(desc, style = typography.bodyMedium, textAlign = TextAlign.Center)
+                        Spacer(modifier.height(3.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 @Composable
 fun searchSubraces(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {

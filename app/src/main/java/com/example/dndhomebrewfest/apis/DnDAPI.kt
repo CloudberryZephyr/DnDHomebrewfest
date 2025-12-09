@@ -23,6 +23,7 @@ import com.example.dndhomebrewfest.viewmodels.RuleSection
 import com.example.dndhomebrewfest.viewmodels.Skill
 import com.example.dndhomebrewfest.viewmodels.Spell
 import com.example.dndhomebrewfest.viewmodels.Subclass
+import com.example.dndhomebrewfest.viewmodels.SubclassLevel
 import com.example.dndhomebrewfest.viewmodels.Subrace
 import com.example.dndhomebrewfest.viewmodels.Trait
 import com.example.dndhomebrewfest.viewmodels.WeaponProperty
@@ -112,6 +113,9 @@ interface DndAPIService {
 
     @GET("/api/2014/classes/{class}/levels")
     suspend fun getClassLevels(@Path("class") className : String) : List<ClassLevel>
+
+    @GET("/api/2014/subclasses/{subclass}/levels")
+    suspend fun getSubclassLevels(@Path("subclass") subclassName : String) : List<SubclassLevel>
 
 }
 

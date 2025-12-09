@@ -750,6 +750,7 @@ data class SubclassLevel(
     val features : List<ObjectReference>,
     @SerialName("class") val req_class : ObjectReference,
     val subclass : ObjectReference,
+    val subclass_specific : ClassSpecific? = null,
     val url: String,
     val index: String,
     val updated_at: String
@@ -852,8 +853,7 @@ class DnDViewModel : ViewModel() {
     var traitObjects by mutableStateOf<List<Trait>>(emptyList())
     var weaponPropertyObjects by mutableStateOf<List<WeaponProperty>>(emptyList())
     var classLevelObjects by mutableStateOf<List<ClassLevel>>(emptyList())
-    var classFeatures by mutableStateOf<List<Feature>>(emptyList())
-
+    var subclassLevelObjects by mutableStateOf<List<SubclassLevel>>(emptyList())
 
     fun getAbilityScores() {
         viewModelScope.launch {
@@ -1394,6 +1394,19 @@ class DnDViewModel : ViewModel() {
 //                        Log.i("MyTAG", "Added ${result.url}")
             } catch (e: Throwable) {
                 Log.e("MyTAG", "error with class level for ${className}: ${e.message}")
+            }
+        }
+    }
+
+    fun getSubclassLevels(subclassName : String) {
+        viewModelScope.launch {
+            try {
+                val info = DnDAPI.retrofitService.getSubclassLevels(subclassName)
+                subclassLevelObjects = info
+                Log.d("MyTAG", info.toString())
+//                        Log.i("MyTAG", "Added ${result.url}")
+            } catch (e: Throwable) {
+                Log.e("MyTAG", "error with class level for ${subclassName}: ${e.message}")
             }
         }
     }
