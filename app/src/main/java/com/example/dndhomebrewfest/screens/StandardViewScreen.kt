@@ -115,16 +115,16 @@ fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
             "Conditions" -> SearchConditions(hbfVM, dndViewModel)
             "Damage Types" -> SearchDamageTypes(hbfVM, dndViewModel)
             "Equipment" -> SearchEquipment(hbfVM, dndViewModel)
-            "Feats" -> searchFeats(hbfVM, dndViewModel)
-            "Languages" -> searchLanguages(hbfVM, dndViewModel)
-            "Magic Items" -> searchMagicItems(hbfVM, dndViewModel)
-            "Magic Schools" -> searchMagicSchool(hbfVM, dndViewModel)
-            "Monsters" -> searchMonsters(hbfVM, dndViewModel)
-            "Races" -> searchRaces(hbfVM, dndViewModel)
-            "Spells" -> searchSpells(hbfVM, dndViewModel)
-            "Subclasses" -> searchSubclasses(hbfVM, dndViewModel)
-            "Traits" -> searchTraits(hbfVM, dndViewModel)
-            else -> searchWeaponProperties(hbfVM, dndViewModel)
+            "Feats" -> SearchFeats(hbfVM, dndViewModel)
+            "Languages" -> SearchLanguages(hbfVM, dndViewModel)
+            "Magic Items" -> SearchMagicItems(hbfVM, dndViewModel)
+            "Magic Schools" -> SearchMagicSchool(hbfVM, dndViewModel)
+            "Monsters" -> SearchMonsters(hbfVM, dndViewModel)
+            "Races" -> SearchRaces(hbfVM, dndViewModel)
+            "Spells" -> SearchSpells(hbfVM, dndViewModel)
+            "Subclasses" -> SearchSubclasses(hbfVM, dndViewModel)
+            "Traits" -> SearchTraits(hbfVM, dndViewModel)
+            else -> SearchWeaponProperties(hbfVM, dndViewModel)
         }
 
     }
@@ -391,8 +391,8 @@ fun ShowBackground(background: Background, hbfVM : HBFViewModel, modifier: Modif
 
                 Spacer(modifier = modifier.height(10.dp))
 
-                for (starting_option in background.starting_equipment_options) {
-                    Text("Choose ${starting_option.choose} ${starting_option.from.equipment_category?.name}")
+                for (startingOption in background.starting_equipment_options) {
+                    Text("Choose ${startingOption.choose} ${startingOption.from.equipment_category?.name}")
                 }
 
                 Spacer(modifier = modifier.height(10.dp))
@@ -632,7 +632,7 @@ fun ShowClasses(classObj: Class, hbfVM: HBFViewModel, dndViewModel: DnDViewModel
                 Spacer(modifier = modifier.height(10.dp))
 
                 var savingThrows = ""
-                for (i in range(0, classObj.saving_throws!!.size - 1)) {
+                for (i in range(0, classObj.saving_throws.size - 1)) {
                     savingThrows = savingThrows + classObj.saving_throws[i].name + ", "
                 }
                 savingThrows += classObj.saving_throws[classObj.saving_throws.size - 1].name
@@ -691,8 +691,8 @@ fun ShowClasses(classObj: Class, hbfVM: HBFViewModel, dndViewModel: DnDViewModel
                 Spacer(modifier = modifier.height(10.dp))
 
                 Text("Starting Equipment:")
-                for (starting_option in classObj.starting_equipment_options) {
-                    Text("Choose ${starting_option.choose} ${starting_option.desc}", style = typography.bodyMedium,
+                for (startingOption in classObj.starting_equipment_options) {
+                    Text("Choose ${startingOption.choose} ${startingOption.desc}", style = typography.bodyMedium,
                         textAlign = TextAlign.Center)
                 }
                 // skipping info on multiclassing for now
@@ -912,7 +912,7 @@ fun ShowClassLevel(level : ClassLevel, dndViewModel: DnDViewModel, modifier : Mo
                 "warlock" -> {
                     if (level.class_specific.invocations_known != 0) Text("Invocations: ${level.class_specific.invocations_known}")
                     if (level.class_specific.mystic_arcanum_level_6 != 0) {
-                        var arcana : String = "6" +
+                        val arcana : String = "6" +
                                 if (level.class_specific.mystic_arcanum_level_7 != 0) ", 7" else "" +
                                 if (level.class_specific.mystic_arcanum_level_8 != 0) ", 8" else "" +
                                 if (level.class_specific.mystic_arcanum_level_9 != 0) ", 9" else ""
@@ -1310,7 +1310,7 @@ fun SearchEquipment(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: M
 }
 
 @Composable
-fun searchFeats(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchFeats(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     if(hbfUiState.showThisObject != null) {
@@ -1451,7 +1451,7 @@ fun ShowFeat(feat: Feat, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun searchLanguages(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchLanguages(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     if(hbfUiState.showThisObject != null) {
@@ -1545,7 +1545,7 @@ fun ShowLanguage(lang: Language, hbfVM: HBFViewModel, modifier: Modifier = Modif
 }
 
 @Composable
-fun searchMagicItems(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchMagicItems(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     if(hbfUiState.showThisObject != null) {
@@ -1658,7 +1658,7 @@ fun ShowMagicItems(magicItem : MagicItem, hbfVM: HBFViewModel, modifier: Modifie
 }
 
 @Composable
-fun searchMagicSchool(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchMagicSchool(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     if(hbfUiState.showThisObject != null) {
@@ -1736,7 +1736,7 @@ fun ShowMagicSchool(school: MagicSchool, hbfVM: HBFViewModel, modifier: Modifier
 }
 
 @Composable
-fun searchMonsters(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchMonsters(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     if(hbfUiState.showThisObject != null) {
@@ -2038,17 +2038,17 @@ fun ShowMonster(monster: Monster, hbfVM: HBFViewModel, modifier : Modifier = Mod
                 if (expandActions) {
                     // actions
                     if (!monster.actions.isEmpty()) {
-                        showActions(monster.actions)
+                        ShowActions(monster.actions)
                     }
                     // reactions
                     if (!monster.reactions.isEmpty()) {
                         Text("Reactions:")
-                        showActions(monster.reactions)
+                        ShowActions(monster.reactions)
                     }
                     // legendary actions
                     if (!monster.legendary_actions.isEmpty()) {
                         Text("Legendary Actions:")
-                        showActions(monster.legendary_actions)
+                        ShowActions(monster.legendary_actions)
                     }
                 }
             }
@@ -2058,7 +2058,7 @@ fun ShowMonster(monster: Monster, hbfVM: HBFViewModel, modifier : Modifier = Mod
 }
 
 @Composable
-fun showActions(actions : List<Action>, modifier : Modifier = Modifier) {
+fun ShowActions(actions : List<Action>, modifier : Modifier = Modifier) {
     Column(modifier.fillMaxWidth()) {
         for (action in actions) {
             Text("${if (action.name != null) action.name else action.action_name}: ${action.desc}",
@@ -2069,7 +2069,7 @@ fun showActions(actions : List<Action>, modifier : Modifier = Modifier) {
 }
 
 @Composable
-fun searchRaces(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchRaces(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     if(hbfUiState.showThisObject != null) {
@@ -2262,7 +2262,7 @@ fun ShowRace(race: Race, hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modif
 }
 
 @Composable
-fun searchSpells(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchSpells(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     if(hbfUiState.showThisObject != null) {
@@ -2385,7 +2385,7 @@ fun ShowSpell(spell: Spell, hbfVM: HBFViewModel, modifier: Modifier = Modifier) 
 }
 
 @Composable
-fun searchSubclasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchSubclasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     if(hbfUiState.showThisObject != null) {
@@ -2584,8 +2584,12 @@ fun ShowSubclassLevel(level : SubclassLevel, dndViewModel: DnDViewModel, modifie
 }
 
 @Composable
-fun searchTraits(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun SearchTraits(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
+
+    if(hbfUiState.showThisObject != null) {
+        ShowTrait((hbfUiState.showThisObject) as Trait, hbfVM)
+    }
 
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
@@ -2597,18 +2601,33 @@ fun searchTraits(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modi
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
 
     ) {
         items(items = dndViewModel.traitObjects) { item ->
             if (item.name.lowercase().contains(hbfUiState.current_filter)) {
-
                 Card(
-
+                    modifier = modifier.height(65.dp).requiredWidth(181.dp)
                 ) {
-                    Text(item.name)
-                    // TODO: ADD SPECIFIC DATA LAYOUT
-
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -2616,7 +2635,44 @@ fun searchTraits(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modi
 }
 
 @Composable
-fun searchWeaponProperties(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
+fun ShowTrait(trait: Trait, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = trait.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                if (trait.trait_specific != null && trait.trait_specific.breath_weapon != null) {
+                    Text(
+                        text = trait.trait_specific.breath_weapon.desc, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                } else {
+                    for (desc in trait.desc) {
+                        Text(
+                            text = desc, style = typography.bodyMedium,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
+fun SearchWeaponProperties(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     LaunchedEffect(Unit) {
