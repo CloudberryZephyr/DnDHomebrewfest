@@ -2222,6 +2222,10 @@ fun ShowRace(race: Race, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
 fun searchSpells(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
+    if(hbfUiState.showThisObject != null) {
+        ShowSpell((hbfUiState.showThisObject) as Spell, hbfVM)
+    }
+
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
@@ -2232,21 +2236,108 @@ fun searchSpells(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modi
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
         contentPadding = PaddingValues(4.dp)
 
     ) {
         items(items = dndViewModel.spellObjects) { item ->
-            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
+            val classes = mutableListOf<String>()
 
+            for (classRef in item.classes) {
+                classes.add(classRef.name)
+            }
+            if (item.name.lowercase().contains(hbfUiState.current_filter) ||
+                hbfUiState.current_filter.contains(item.level.toString()) ||
+                classes.joinToString().contains(hbfUiState.current_filter)) {
                 Card(
-
+                    modifier = modifier.height(65.dp).requiredWidth(181.dp)
                 ) {
-                    Text(item.name)
-                    // TODO: ADD SPECIFIC DATA LAYOUT
-
+                    Row(
+                        modifier = modifier.fillMaxHeight(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            onClick = {
+                                hbfVM.setObjectToShow(item)
+                            },
+                            modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                item.name.uppercase(),
+                                style = typography.bodyLarge,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ShowSpell(spell: Spell, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
+    Dialog(
+        onDismissRequest = hbfVM::onDialogDismiss
+    ) {
+        Card(
+            modifier = modifier.width(300.dp)
+        ) {
+            Column(
+                modifier = modifier.fillMaxWidth()
+                    .padding(10.dp).verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Text(text = spell.name, style = typography.titleLarge, textDecoration = TextDecoration.Underline)
+
+                Spacer(modifier = modifier.height(10.dp))
+
+                Text("Level ${spell.level} ${spell.school.name}")
+                Text("Range: ${spell.range}", style = typography.bodyMedium)
+                Text("Components: ${spell.components.joinToString()}", style = typography.bodyMedium)
+                Text("Duration: ${spell.duration}", style = typography.bodyMedium)
+                Text("Casting Time: ${spell.casting_time}", style = typography.bodyMedium)
+                if (spell.ritual) Text("Ritual", style = typography.bodyMedium)
+                if (spell.concentration) Text("Concentration", style = typography.bodyMedium)
+
+                Spacer(modifier.height(10.dp))
+
+                for (desc in spell.desc) {
+                    Text(
+                        text = desc, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                for (desc in spell.higher_level) {
+                    Text(
+                        text = desc, style = typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                Spacer(modifier.height(10.dp))
+
+                val classes = mutableListOf<String>()
+
+                for (classRef in spell.classes) {
+                    classes.add(classRef.name)
+                }
+
+                Text("Classes: ${classes.joinToString()}")
+
+                val subClasses = mutableListOf<String>()
+
+                for (classRef in spell.subclasses) {
+                    subClasses.add(classRef.name)
+                }
+
+                if (!subClasses.isEmpty()) Text("Subclasses: ${subClasses.joinToString()}")
+            }
+        }
+
     }
 }
 
