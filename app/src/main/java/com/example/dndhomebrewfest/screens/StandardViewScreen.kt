@@ -123,7 +123,6 @@ fun StandardViewScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
             "Races" -> searchRaces(hbfVM, dndViewModel)
             "Spells" -> searchSpells(hbfVM, dndViewModel)
             "Subclasses" -> searchSubclasses(hbfVM, dndViewModel)
-            "Subraces" -> searchSubraces(hbfVM, dndViewModel)
             "Traits" -> searchTraits(hbfVM, dndViewModel)
             else -> searchWeaponProperties(hbfVM, dndViewModel)
         }
@@ -2074,7 +2073,7 @@ fun searchRaces(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modif
     val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
 
     if(hbfUiState.showThisObject != null) {
-        ShowRace((hbfUiState.showThisObject) as Race, hbfVM)
+        ShowRace((hbfUiState.showThisObject) as Race, hbfVM, dndViewModel)
     }
 
     LaunchedEffect(Unit) {
@@ -2082,6 +2081,9 @@ fun searchRaces(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modif
 
         if(dndViewModel.raceObjects.isEmpty()) {
             dndViewModel.getRaces()
+        }
+        if(dndViewModel.subraceObjects.isEmpty()) {
+            dndViewModel.getSubraces()
         }
     }
     LazyVerticalGrid(
@@ -2120,7 +2122,7 @@ fun searchRaces(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modif
 }
 
 @Composable
-fun ShowRace(race: Race, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
+fun ShowRace(race: Race, hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modifier: Modifier = Modifier) {
     Dialog(
         onDismissRequest = hbfVM::onDialogDismiss
     ) {
@@ -2129,7 +2131,7 @@ fun ShowRace(race: Race, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
         ) {
             Column(
                 modifier = modifier.fillMaxWidth()
-                    .padding(10.dp),
+                    .padding(10.dp).verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceAround
             ) {
@@ -2200,18 +2202,59 @@ fun ShowRace(race: Race, hbfVM: HBFViewModel, modifier: Modifier = Modifier) {
 
                 Spacer(modifier.height(10.dp))
 
-                Text("Subraces:", style = typography.bodyMedium)
-
                 if (race.subraces.size > 0) {
-                    var subraces: String = race.subraces.get(0).name
+                    Text("Subraces:", style = typography.bodyMedium)
 
-                    for (option in race.subraces.dropLast(1)) {
-                        subraces = subraces + ", " + option.name
+                    for (subraceRef in race.subraces) {
+                        var subrace : Subrace? = null
+                        for (sub in dndViewModel.subraceObjects) {
+                            if (subraceRef.index.equals(sub.index)) {
+                                subrace = sub
+                                break
+                            }
+                        }
+
+                        if (subrace != null) {
+                            var expand by remember { mutableStateOf(false) }
+
+                            TextButton(
+                                onClick = {
+                                    expand = !expand
+                                },
+                            ) {
+                                Row() {
+                                    Text(text = subrace.name)
+                                    Icon(
+                                        painter = painterResource(if (expand) R.drawable.arrow_drop_up else R.drawable.arrow_drop_down),
+                                        contentDescription = null,
+                                        modifier = modifier.size(20.dp)
+                                    )
+                                }
+                            }
+
+                            if (expand) {
+                                if(!subrace.ability_bonuses.isEmpty()) {
+                                    for (score in subrace.ability_bonuses) {
+                                        Text("+${score.bonus} ${score.ability_score.name}")
+                                    }
+                                }
+
+                                Text(
+                                    subrace.desc,
+                                    style = typography.bodyMedium,
+                                    textAlign = TextAlign.Center
+                                )
+
+                                if (!subrace.racial_traits.isEmpty()) {
+                                    for (trait in subrace.racial_traits) {
+                                        Text(trait.name, style = typography.bodyMedium)
+                                    }
+                                }
+
+                            }
+                        }
                     }
-
-                    Text(subraces, style = typography.bodyMedium, textAlign = TextAlign.Center)
                 }
-
             }
         }
 
@@ -2534,39 +2577,6 @@ fun ShowSubclassLevel(level : SubclassLevel, dndViewModel: DnDViewModel, modifie
                         Text(desc, style = typography.bodyMedium, textAlign = TextAlign.Center)
                         Spacer(modifier.height(3.dp))
                     }
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun searchSubraces(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modifier = Modifier) {
-    val hbfUiState : HBFUiState = hbfVM.uiState.collectAsState().value
-
-    LaunchedEffect(Unit) {
-        Log.d("MyTAG", "In launched effect")
-
-        if(dndViewModel.subraceObjects.isEmpty()) {
-            dndViewModel.getSubraces()
-        }
-    }
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(4.dp)
-
-    ) {
-        items(items = dndViewModel.subraceObjects) { item ->
-            if (item.name.lowercase().contains(hbfUiState.current_filter)) {
-
-                Card(
-
-                ) {
-                    Text(item.name)
-                    // TODO: ADD SPECIFIC DATA LAYOUT
-
                 }
             }
         }

@@ -23,7 +23,6 @@ object DataSource {
         "Races",
         "Spells",
         "Subclasses",
-        "Subraces",
         "Traits",
         "Weapon Properties"
     )
