@@ -1,21 +1,18 @@
 package com.example.dndhomebrewfest.screens
 
 import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -30,8 +27,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.dndhomebrewfest.viewmodels.Class
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
+import com.example.dndhomebrewfest.viewmodels.Race
+import com.example.dndhomebrewfest.viewmodels.Subrace
 import kotlin.random.Random
 
 enum class StatMethod{
@@ -57,7 +57,12 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier
     var step : Step by remember{ mutableStateOf<Step>(Step.ONE)}
 
     var finalClass by remember { mutableStateOf<String>("")}
+    var classInfo : Class? = null
     val finalStats by remember { mutableStateOf<MutableMap<String, Int>>(mutableMapOf())}
+    var finalRace by remember {mutableStateOf<String>("")}
+    var raceInfo : Race? = null
+    var finalSubrace by remember {mutableStateOf<String>("")}
+    var subraceInfo : Subrace? = null
 
     // Step 1: Class
     val classes : MutableList<String> = mutableListOf()
@@ -110,6 +115,7 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier
                     selectedIndex?.let { finalClass = classes[it] }
                     step = Step.TWO
                     Log.d("MYTAG", "button clicked")
+
                 },
                 enabled = finalClass != ""
             ){
@@ -129,6 +135,12 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier
                             selectedIndex = if (selectedIndex == index) null else index
                             Log.i("MYTAG", "selected $charClass")
                             finalClass = charClass
+                            for(c in dndViewModel.classObjects){
+                                if(c.name == classes[index]){
+                                    classInfo = c
+                                }
+                            }
+                            Log.i("MYTAG", "Selected $finalClass. Json: $classInfo")
                         }
                     ) {
                         Box(
@@ -465,10 +477,83 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier
 
     }
     // TODO: Step 3: Race
+    var hasSubraces : Boolean = false
+
+    if(step == Step.THREE){
+        Column(
+            modifier = modifier.fillMaxSize().alpha(if (step == Step.THREE) 1f else 0.5f)
+                .pointerInput(step == Step.THREE) {
+                    if (step != Step.THREE) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                awaitPointerEvent()
+                            }
+                        }
+                    }
+                }
+            ,
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Select Your Race!")
+
+            var selectedIndex by remember { mutableStateOf<Int?>(null) }
+
+            Button(
+                onClick = {
+                    selectedIndex?.let { finalRace = races[it] }
+                    step = Step.FOUR
+                    Log.d("MYTAG", "race chosen")
+                },
+                enabled = finalRace != ""
+            ){
+                Text("Next!")
+            }
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = modifier.fillMaxSize()
+            ) {
+                items(races.size) { index ->
+                    val charRace = races[index]
+                    val isSelected = selectedIndex == index
+
+                    Card(
+                        onClick = {
+                            selectedIndex = if (selectedIndex == index) null else index
+                            for(r in dndViewModel.raceObjects){
+                                if(r.name == races[index]){
+                                    raceInfo = r
+                                    if(!r.subraces.isEmpty()){
+                                        hasSubraces = true
+                                    }
+                                }
+                            }
+                            finalRace = charRace
+                            Log.i("MYTAG", "Selected $finalRace. Json: $raceInfo")
+                        }
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = charRace)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // TODO: Step 3.5: Subrace
+    if(step == Step.FOUR && hasSubraces){
+        Text("Subrace Selector")
+    }
 
     // TODO: Step 4: Background
 
     // TODO: Step 5: Equipment
 
-    // TODO: Step 6: Misc.
+    // TODO: Step 6: Misc Choices: Skills, Terrains, Spells; populate character class with info
+
 }
