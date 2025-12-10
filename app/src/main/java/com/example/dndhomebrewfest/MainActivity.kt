@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontVariation.width
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -49,6 +50,9 @@ import com.example.dndhomebrewfest.screens.CharacterViewScreen
 import com.example.dndhomebrewfest.screens.HomebrewViewScreen
 import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
 import com.example.dndhomebrewfest.viewmodels.RoomVM
+import com.example.dndhomebrewfest.data.Character
+import com.example.dndhomebrewfest.screens.CharacterCreationScreen
+import com.example.dndhomebrewfest.screens.CharacterViewScreen
 import com.example.dndhomebrewfest.screens.StandardSearchScreen
 import com.example.dndhomebrewfest.screens.StandardViewScreen
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
@@ -202,9 +206,10 @@ fun Homebrewery(navController : NavHostController, modifier: Modifier = Modifier
         }
 
         composable(route = Screens.CharacterCreation.name) {
+            // Character Creation
             CharacterCreationScreen(hbfVM)
         }
-        
+
         composable(route = Screens.HomebrewView.name) {
             HomebrewViewScreen(
                 createHomebrew = {
