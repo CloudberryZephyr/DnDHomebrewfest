@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontVariation.width
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,6 +42,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
 import com.example.dndhomebrewfest.viewmodels.RoomVM
+import com.example.dndhomebrewfest.data.Character
 import com.example.dndhomebrewfest.screens.StandardSearchScreen
 import com.example.dndhomebrewfest.screens.StandardViewScreen
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
@@ -65,7 +69,7 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(modifier = Modifier.fillMaxSize(),
                     topBar = {
-                        TopBar(navController::navigateUp)
+                        TopBar(screenName, navController::navigateUp)
                     },
                     bottomBar = {
                         BottomBar(screenName = screenName, navigate = navController::navigate)
@@ -82,7 +86,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(back : () -> Unit, modifier: Modifier = Modifier) {
+fun TopBar(screenName : String, back : () -> Unit, modifier: Modifier = Modifier) {
     TopAppBar(
         title = {},
         navigationIcon = {
@@ -92,8 +96,6 @@ fun TopBar(back : () -> Unit, modifier: Modifier = Modifier) {
                     .padding(start = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
-                // back button
                 IconButton(
                     onClick = back
                 ) {
@@ -115,6 +117,10 @@ fun TopBar(back : () -> Unit, modifier: Modifier = Modifier) {
             containerColor = MaterialTheme.colorScheme.primaryContainer
         )
     )
+
+    // back button
+
+    // screen name
 }
 
 
@@ -172,7 +178,7 @@ fun BottomBar(modifier: Modifier = Modifier, screenName : String, navigate : (ro
 }
 
 @Composable
-fun Homebrewery(navController : NavHostController) {
+fun Homebrewery(navController : NavHostController, modifier: Modifier = Modifier) {
     val roomVM = RoomVM.getInstance()
     val hbfVM : HBFViewModel = viewModel()
 
