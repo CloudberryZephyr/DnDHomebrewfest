@@ -198,6 +198,106 @@ data class ClassSpellcasting(
 )
 
 @Serializable
+data class SpellSlots(
+    val cantrips_known : Int? = null,
+    val spells_known : Int? = null,
+    val spell_slots_level_1 : Int,
+    val spell_slots_level_2 : Int,
+    val spell_slots_level_3 : Int,
+    val spell_slots_level_4 : Int,
+    val spell_slots_level_5 : Int,
+    val spell_slots_level_6 : Int? = null,
+    val spell_slots_level_7 : Int? = null,
+    val spell_slots_level_8 : Int? = null,
+    val spell_slots_level_9 : Int? = null
+)
+
+@Serializable
+data class DiceCount(
+    val dice_count : Int,
+    val dice_value : Int
+)
+
+@Serializable
+data class CreateSpellRule(
+    val spell_slot_level : Int,
+    val sorcery_point_cost : Int
+)
+
+@Serializable
+data class ClassSpecific(
+    // barbarian
+    val rage_count : Int? = null,
+    val rage_damage_bonus : Int? = null,
+    val brutal_critical_dice : Int? = null,
+
+    // bard
+    val bardic_inspiration_die : Int? = null,
+    val song_of_rest_die : Int? = null,
+    val magical_secrets_max_5 : Int? = null,
+    val magical_secrets_max_7 : Int? = null,
+    val magical_secrets_max_9 : Int? = null,
+
+    //cleric
+    val channel_divinity_charges : Int? = null,
+    val destroy_undead_cr : Double? = null,
+
+    // druid
+    val wild_shape_max_cr : Double? = null,
+    val wild_shape_swim : Boolean? = false,
+    val wild_shape_fly : Boolean? = false,
+
+    //fighter
+    val action_surges : Int? = null,
+    val indomitable_uses : Int? = null,
+    val extra_attacks : Int? = null,
+
+    // monk
+    val martial_arts : DiceCount? = null,
+    val ki_points : Int? = null,
+    val unarmored_movement : Int? = null,
+
+    // paladin
+    val aura_range : Int? = null,
+
+    // ranger
+    val favored_enemies : Int? = null,
+    val favored_terrain : Int? = null,
+
+    // rogue
+    val sneak_attack : DiceCount? = null,
+
+    // sorcerer
+    val sorcery_points : Int? = null,
+    val metamagic_known : Int? = null,
+    val creating_spell_slots : List<CreateSpellRule>? = null,
+
+    // warlock
+    val invocations_known : Int? = null,
+    val mystic_arcanum_level_6 : Int? = null,
+    val mystic_arcanum_level_7 : Int? = null,
+    val mystic_arcanum_level_8 : Int? = null,
+    val mystic_arcanum_level_9 : Int? = null,
+
+    // wizard
+    val arcane_recovery_levels : Int? = null
+)
+
+@Serializable
+data class ClassLevel(
+    val level : Int,
+    val ability_score_bonuses : Int,
+    val prof_bonus : Int,
+    val features : List<ObjectReference>,
+    val spellcasting : SpellSlots? = null,
+    val class_specific : ClassSpecific,
+    val index : String,
+    @SerialName("class") val classRef : ObjectReference,
+    val url : String,
+    val updated_at: String
+)
+
+@Serializable
 data class Class(
     val index: String,
     val name : String,
@@ -650,6 +750,7 @@ data class SubclassLevel(
     val features : List<ObjectReference>,
     @SerialName("class") val req_class : ObjectReference,
     val subclass : ObjectReference,
+    val subclass_specific : ClassSpecific? = null,
     val url: String,
     val index: String,
     val updated_at: String
@@ -751,6 +852,8 @@ class DnDViewModel : ViewModel() {
     var subraceObjects by mutableStateOf<List<Subrace>>(emptyList())
     var traitObjects by mutableStateOf<List<Trait>>(emptyList())
     var weaponPropertyObjects by mutableStateOf<List<WeaponProperty>>(emptyList())
+    var classLevelObjects by mutableStateOf<List<ClassLevel>>(emptyList())
+    var subclassLevelObjects by mutableStateOf<List<SubclassLevel>>(emptyList())
 
     fun getAbilityScores() {
         viewModelScope.launch {
@@ -1278,6 +1381,32 @@ class DnDViewModel : ViewModel() {
 
             } catch (e: Throwable) {
                 Log.e("MyTAG", "error with weapon-properties: ${e.message}")
+            }
+        }
+    }
+
+    fun getClassLevels(className : String) {
+        viewModelScope.launch {
+            try {
+                val info = DnDAPI.retrofitService.getClassLevels(className)
+                classLevelObjects = info
+                Log.d("MyTAG", info.toString())
+//                        Log.i("MyTAG", "Added ${result.url}")
+            } catch (e: Throwable) {
+                Log.e("MyTAG", "error with class level for ${className}: ${e.message}")
+            }
+        }
+    }
+
+    fun getSubclassLevels(subclassName : String) {
+        viewModelScope.launch {
+            try {
+                val info = DnDAPI.retrofitService.getSubclassLevels(subclassName)
+                subclassLevelObjects = info
+                Log.d("MyTAG", info.toString())
+//                        Log.i("MyTAG", "Added ${result.url}")
+            } catch (e: Throwable) {
+                Log.e("MyTAG", "error with class level for ${subclassName}: ${e.message}")
             }
         }
     }
