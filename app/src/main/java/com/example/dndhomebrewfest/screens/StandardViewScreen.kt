@@ -2260,37 +2260,32 @@ fun ShowRace(race: Race, hbfVM: HBFViewModel, dndViewModel : DnDViewModel, modif
 
                 Spacer(modifier.height(10.dp))
 
-                var langs: String = race.languages[0].name
+                var langs = ""
+                if (race.languages.isNotEmpty()) {
+                    langs = race.languages[0].name
 
-                for (lang in race.languages.subList(1,race.languages.size-1)) {
-                    langs = langs + ", " + lang.name
-                }
-
-                Text("Languages: $langs", style = typography.bodyMedium, textAlign = TextAlign.Center)
-
-                if (race.language_options != null) {
-                    Text(race.language_desc, style = typography.bodyMedium)
-
-                    var options: String = ((race.language_options.from.options)?.get(0) as Option.OptionObject).ability_score?.name ?: ""
-
-                    for (option in race.language_options.from.options.subList(1,race.language_options.from.options.size-1)) {
-                        options = options + ", " + (option as Option.OptionObject).ability_score?.name
+                    if (race.languages.size > 1) {
+                        for (lang in race.languages.subList(1, race.languages.size - 1)) {
+                            langs = langs + ", " + lang.name
+                        }
                     }
-
-                    Text(options, style = typography.bodyMedium, textAlign = TextAlign.Center)
                 }
+
+                Text("Languages: ${if (langs == "") "none" else langs}", style = typography.bodyMedium, textAlign = TextAlign.Center)
 
                 Spacer(modifier.height(10.dp))
 
-                Text("Traits:", style = typography.bodyMedium)
+                if (race.traits.isNotEmpty()) {
+                    Text("Traits:", style = typography.bodyMedium)
 
-                var traits: String = race.traits[0].name
+                    var traits: String = race.traits[0].name
 
-                for (option in race.traits.subList(1,race.traits.size-1)) {
-                    traits = traits + ", " + option.name
+                    for (option in race.traits.subList(1, race.traits.size - 1)) {
+                        traits = traits + ", " + option.name
+                    }
+
+                    Text(traits, style = typography.bodyMedium, textAlign = TextAlign.Center)
                 }
-
-                Text(traits, style = typography.bodyMedium, textAlign = TextAlign.Center)
 
                 Spacer(modifier.height(10.dp))
 

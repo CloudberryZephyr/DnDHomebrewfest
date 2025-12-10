@@ -1,5 +1,7 @@
 package com.example.dndhomebrewfest.screens
 
+import android.util.Log
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +17,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -24,12 +31,28 @@ import com.example.dndhomebrewfest.data.DataSource
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
 
 @Composable
-fun StandardSearchScreen(navController : NavController, hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
+fun StandardSearchScreen(navController : NavController, navLeft: () -> Unit, hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
+
+    var offset by remember { mutableFloatStateOf(0f) }
 
     // filter for type
     LazyVerticalGrid (
         columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize()
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragStart = {
+                        Log.d("MyTAG", "drag detected")
+                        offset = 0f
+                    },
+                    onDragEnd = {
+                        if (offset > 0) navLeft()
+                    }
+                ) { change, dragAmount ->
+                    offset += dragAmount
+                    change.consume()
+                }
+            },
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         contentPadding = PaddingValues(4.dp)
