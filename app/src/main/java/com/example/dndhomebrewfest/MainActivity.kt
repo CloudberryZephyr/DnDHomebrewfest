@@ -35,6 +35,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -124,7 +129,12 @@ class MainActivity : ComponentActivity() {
                         BottomBar(screenName = screenName, navigate = navController::navigate)
                     }
                 ) { innerPadding ->
-                        Box(modifier = Modifier.padding(innerPadding)) {
+                        Box(modifier = Modifier.padding(innerPadding)
+                            .paint(
+                                painter = painterResource(R.drawable.background),
+                                contentScale = ContentScale.Crop,
+                                colorFilter = ColorFilter.tint(Color.White, BlendMode.Softlight)
+                            )) {
                             Homebrewery(navController, hbfVM, roomVM, imageLoader)
                         }
                 }
