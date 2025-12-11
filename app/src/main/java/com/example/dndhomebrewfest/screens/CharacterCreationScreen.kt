@@ -1,9 +1,6 @@
 package com.example.dndhomebrewfest.screens
 
-import android.content.Context
-import android.graphics.BitmapFactory
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,20 +25,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.dndhomebrewfest.HBFUiState
+import com.example.dndhomebrewfest.viewmodels.Background
 import com.example.dndhomebrewfest.viewmodels.Class
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
 import com.example.dndhomebrewfest.viewmodels.Race
 import com.example.dndhomebrewfest.viewmodels.Subrace
-import java.io.File
-import java.io.FileInputStream
 import kotlin.random.Random
-
 
 enum class StatMethod{
     STANDARD,
@@ -60,7 +52,11 @@ enum class Step{
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CharacterCreationScreen(hbfVM : HBFViewModel, imageLoader: (Int) -> Unit, modifier : Modifier = Modifier) {
+fun CharacterCreationScreen(
+    hbfVM: HBFViewModel,
+    modifier: Modifier = Modifier,
+    imageLoader: (Int) -> Unit
+) {
     val hbfUIState by hbfVM.uiState.collectAsState()
     val dndViewModel : DnDViewModel = viewModel()
     var step : Step by remember{ mutableStateOf<Step>(Step.ONE)}
@@ -72,11 +68,15 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, imageLoader: (Int) -> Unit, mo
     var raceInfo : Race? = null
     var finalSubrace by remember {mutableStateOf<String>("")}
     var subraceInfo : Subrace? = null
+    var finalBg by remember{mutableStateOf<String>("")}
+    var bgInfo : Background? = null
+
 
     // Step 1: Class
     val classes : MutableList<String> = mutableListOf()
     val abilityScores : MutableList<String> = mutableListOf()
     val races : MutableList<String> = mutableListOf()
+    val bgs : MutableList<String> = mutableListOf()
 
     LaunchedEffect(Unit) {
         if(dndViewModel.classObjects.isEmpty()) {
@@ -88,6 +88,9 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, imageLoader: (Int) -> Unit, mo
         if(dndViewModel.raceObjects.isEmpty()) {
             dndViewModel.getRaces()
         }
+        if(dndViewModel.backgroundObjects.isEmpty()) {
+            dndViewModel.getBackgrounds()
+        }
     }
     for(c in dndViewModel.classObjects){
         classes.add(c.name)
@@ -98,12 +101,13 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, imageLoader: (Int) -> Unit, mo
     for(r in dndViewModel.raceObjects){
         races.add(r.name)
     }
+    for(bg in dndViewModel.backgroundObjects){
+        bgs.add(bg.name)
+    }
 
     if(step == Step.ONE){
         Column(
-            modifier = modifier
-                .fillMaxSize()
-                .alpha(if (step == Step.ONE) 1f else 0.5f)
+            modifier = modifier.fillMaxSize().alpha(if (step == Step.ONE) 1f else 0.5f)
                 .pointerInput(step == Step.ONE) {
                     if (step != Step.ONE) {
                         awaitPointerEventScope {
@@ -174,8 +178,7 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, imageLoader: (Int) -> Unit, mo
 
         if(statMethod == StatMethod.NEITHER) {
             Column(
-                modifier = modifier
-                    .fillMaxSize()
+                modifier = modifier.fillMaxSize()
                     .alpha(if (statMethod == StatMethod.NEITHER) 1f else 0.5f)
                     .pointerInput(statMethod == StatMethod.NEITHER) {
                         if (statMethod != StatMethod.NEITHER) {
@@ -206,9 +209,7 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, imageLoader: (Int) -> Unit, mo
             }
         } else {
             Column(
-                modifier = modifier
-                    .fillMaxSize()
-                    .alpha(if (step == Step.TWO) 1f else 0.5f)
+                modifier = modifier.fillMaxSize().alpha(if (step == Step.TWO) 1f else 0.5f)
                     .pointerInput(step == Step.TWO) {
                         if (step != Step.TWO) {
                             awaitPointerEventScope {
@@ -495,9 +496,7 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, imageLoader: (Int) -> Unit, mo
 
     if(step == Step.THREE){
         Column(
-            modifier = modifier
-                .fillMaxSize()
-                .alpha(if (step == Step.THREE) 1f else 0.5f)
+            modifier = modifier.fillMaxSize().alpha(if (step == Step.THREE) 1f else 0.5f)
                 .pointerInput(step == Step.THREE) {
                     if (step != Step.THREE) {
                         awaitPointerEventScope {
@@ -562,45 +561,68 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, imageLoader: (Int) -> Unit, mo
     }
 
     // TODO: Step 3.5: Subrace
-    if(step == Step.FOUR && hasSubraces){
-        Text("Subrace Selector")
-    }
 
     // TODO: Step 4: Background
+    if(step == Step.FOUR){
+        Column(
+            modifier = modifier.fillMaxSize().alpha(if (step == Step.FOUR) 1f else 0.5f)
+                .pointerInput(step == Step.FOUR) {
+                    if (step != Step.FOUR) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                awaitPointerEvent()
+                            }
+                        }
+                    }
+                }
+            ,
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Select Your Background!")
+
+            var selectedIndex by remember { mutableStateOf<Int?>(null) }
+
+            Button(
+                onClick = {
+                    selectedIndex?.let { finalBg = bgs[it] }
+                    step = Step.FIVE
+                    Log.d("MYTAG", "background chosen")
+                },
+                enabled = finalBg != ""
+            ){
+                Text("Next!")
+            }
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = modifier.fillMaxSize()
+            ) {
+                items(bgs.size) { index ->
+                    val charBg = bgs[index]
+                    val isSelected = selectedIndex == index
+
+                    Card(
+                        onClick = {
+                            selectedIndex = if (selectedIndex == index) null else index
+                            finalBg = charBg
+                            Log.i("MYTAG", "Selected $finalBg.")
+                        }
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = charBg)
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     // TODO: Step 5: Equipment
 
     // TODO: Step 6: Misc Choices: Skills, Terrains, Spells; populate character class with info
 
-}
-
-@Composable
-fun CharacterImage(charID : Int, hbfUiState: HBFUiState, context: Context, imageLoader: (Int) -> Unit, modifier : Modifier = Modifier) {
-    val imageName = hbfUiState.current_char_img_name
-
-    Box() {
-        Column() {
-            Button(
-                onClick = {
-                    imageLoader(charID)
-                }
-            ) {
-                Text("Intent Test")
-            }
-
-            if ((imageName == null || imageName == "")) {
-            } else {
-
-                val directory = context.filesDir
-                val file = File(directory, imageName)
-                val bitmap = BitmapFactory.decodeStream(FileInputStream(file))
-                val bitmapPainter = BitmapPainter(bitmap.asImageBitmap())
-
-                Image(
-                    painter = bitmapPainter,
-                    contentDescription = null
-                )
-            }
-        }
-    }
 }

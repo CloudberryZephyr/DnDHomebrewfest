@@ -909,7 +909,7 @@ class DnDViewModel : ViewModel() {
                         val temp = backgroundObjects.toMutableList()
                         temp.add(info)
                         backgroundObjects = temp.toList()
-//                        Log.i("MyTAG", "Added ${result.url}")
+                        Log.i("MyTAG", "Added ${result.url}")
                     } catch (e: Throwable) {
                         Log.e("MyTAG", "error with Background ${result.name}: ${e.message}")
                     }

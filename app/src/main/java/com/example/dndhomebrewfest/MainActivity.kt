@@ -1,6 +1,5 @@
 package com.example.dndhomebrewfest
 
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -268,8 +267,10 @@ fun Homebrewery(navController : NavHostController, hbfVM: HBFViewModel, roomVM: 
 
         composable(route = Screens.CharacterCreation.name) {
             // Character Creation
-            CharacterCreationScreen(imageLoader = imageLoader,
-                hbfVM = hbfVM)
+            CharacterCreationScreen(
+                imageLoader = imageLoader,
+                hbfVM = hbfVM,
+            )
         }
 
         composable(route = Screens.HomebrewView.name) {
