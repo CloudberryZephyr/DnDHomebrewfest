@@ -64,6 +64,7 @@ import com.example.dndhomebrewfest.viewmodels.Feat
 import com.example.dndhomebrewfest.viewmodels.Feature
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
 import com.example.dndhomebrewfest.viewmodels.Option
+import kotlinx.coroutines.launch
 import java.util.stream.IntStream.range
 
 @Composable
@@ -572,11 +573,15 @@ fun SearchClasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Mod
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
-        if(dndViewModel.classObjects.isEmpty()) {
-            dndViewModel.getClasses()
+        launch {
+            if (dndViewModel.classObjects.isEmpty()) {
+                dndViewModel.getClasses()
+            }
         }
-        if(dndViewModel.featureObjects.isEmpty()) {
-            dndViewModel.getFeatures()
+        launch {
+            if (dndViewModel.featureObjects.isEmpty()) {
+                dndViewModel.getFeatures()
+            }
         }
     }
 
@@ -2162,11 +2167,15 @@ fun SearchRaces(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: Modif
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
-        if(dndViewModel.raceObjects.isEmpty()) {
-            dndViewModel.getRaces()
+        launch {
+            if (dndViewModel.raceObjects.isEmpty()) {
+                dndViewModel.getRaces()
+            }
         }
-        if(dndViewModel.subraceObjects.isEmpty()) {
-            dndViewModel.getSubraces()
+        launch {
+            if (dndViewModel.subraceObjects.isEmpty()) {
+                dndViewModel.getSubraces()
+            }
         }
     }
 
@@ -2491,11 +2500,15 @@ fun SearchSubclasses(hbfVM: HBFViewModel, dndViewModel: DnDViewModel, modifier: 
     LaunchedEffect(Unit) {
         Log.d("MyTAG", "In launched effect")
 
-        if(dndViewModel.subclassObjects.isEmpty()) {
-            dndViewModel.getSubclasses()
+        launch {
+            if (dndViewModel.subclassObjects.isEmpty()) {
+                dndViewModel.getSubclasses()
+            }
         }
-        if(dndViewModel.featureObjects.isEmpty()) {
-            dndViewModel.getFeatures()
+        launch {
+            if (dndViewModel.featureObjects.isEmpty()) {
+                dndViewModel.getFeatures()
+            }
         }
     }
 
