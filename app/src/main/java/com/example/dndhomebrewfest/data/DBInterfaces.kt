@@ -17,4 +17,10 @@ interface CharacterDao {
 
     @Query("SELECT * FROM character")
     fun getAllCharacters() : Flow<List<Character>>
+
+    @Query("UPDATE character SET char_img_uri = :imageUri WHERE character_id = :charId")
+    suspend fun updateImageUri(charId: Int, imageUri: String)
+
+    @Query("SELECT * FROM character WHERE character_id = :charID")
+    fun getCharacter(charID : Int) : Flow<Character>
 }

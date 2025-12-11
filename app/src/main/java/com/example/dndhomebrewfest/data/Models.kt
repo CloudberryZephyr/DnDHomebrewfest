@@ -9,5 +9,6 @@ data class Character(
     @PrimaryKey
     var character_id : Int = 1,
     var name : String = "",
-    var character_class : String = ""
+    var character_class : String = "",
+    var char_img_uri : String = ""
 )

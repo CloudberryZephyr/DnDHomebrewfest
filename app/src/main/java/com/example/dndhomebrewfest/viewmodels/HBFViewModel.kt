@@ -22,7 +22,8 @@ class HBFViewModel: ViewModel() {
                 current_filter = "",
                 current_type = "",
                 showThisObject = null,
-                current_equip_cat = ""
+                current_equip_cat = "",
+                current_char_img_name = ""
             )
         }
     }
@@ -43,14 +44,6 @@ class HBFViewModel: ViewModel() {
         }
     }
 
-    fun setEquipCat(equipmentType : String) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                current_equip_cat = equipmentType
-            )
-        }
-    }
-
     fun setObjectToShow(dndObject : Any) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -63,6 +56,14 @@ class HBFViewModel: ViewModel() {
         _uiState.update { currentState ->
             currentState.copy(
                 showThisObject = null
+            )
+        }
+    }
+
+    fun onImageChange(imgName : String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                current_char_img_name = imgName
             )
         }
     }

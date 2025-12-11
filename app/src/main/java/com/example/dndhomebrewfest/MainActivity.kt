@@ -1,12 +1,18 @@
 package com.example.dndhomebrewfest
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,19 +33,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontVariation.width
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -48,14 +46,17 @@ import androidx.navigation.compose.rememberNavController
 import com.example.dndhomebrewfest.screens.CharacterCreationScreen
 import com.example.dndhomebrewfest.screens.CharacterViewScreen
 import com.example.dndhomebrewfest.screens.HomebrewViewScreen
-import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
-import com.example.dndhomebrewfest.viewmodels.RoomVM
-import com.example.dndhomebrewfest.data.Character
-import com.example.dndhomebrewfest.screens.CharacterCreationScreen
-import com.example.dndhomebrewfest.screens.CharacterViewScreen
 import com.example.dndhomebrewfest.screens.StandardSearchScreen
 import com.example.dndhomebrewfest.screens.StandardViewScreen
+import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
+import com.example.dndhomebrewfest.viewmodels.RoomVM
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 enum class Screens () {
     CharacterView,
@@ -67,6 +68,44 @@ enum class Screens () {
 }
 
 class MainActivity : ComponentActivity() {
+    private var currentCharIdToUpdate : Int? = null
+    val roomVM = RoomVM.getInstance()
+    val hbfVM : HBFViewModel by viewModels()
+
+    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+        if (result.resultCode == RESULT_OK) {
+            val intent = result.data
+            val imageUri = intent?.data
+            val charID = currentCharIdToUpdate
+
+            if (imageUri != null && charID != null) {
+                val savedFile = saveImageToInternalStorage(imageUri)
+                if (savedFile != null) {
+                    val savedFileName = savedFile.name
+                    roomVM.updateCharacterImage(charID, savedFileName)
+                    hbfVM.onImageChange(savedFileName)
+                    Log.d("MyTAG", "File saved to char $charID")
+                } else {
+                    Log.e("MyTAG", "Image saving error")
+                    Toast.makeText(this, "Failed to save image", Toast.LENGTH_SHORT).show()
+                }
+            }
+            currentCharIdToUpdate = null
+
+        } else {
+            currentCharIdToUpdate = null
+        }
+    }
+
+    val imageLoader : (Int) -> Unit = { charIndex : Int ->
+        currentCharIdToUpdate = charIndex
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "image/*"
+        }
+        pickImageLauncher.launch(intent)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -77,6 +116,7 @@ class MainActivity : ComponentActivity() {
                 val backStackEntry by navController.currentBackStackEntryAsState()
                 val screenName = backStackEntry?.destination?.route ?: ""
 
+
                 Scaffold(modifier = Modifier.fillMaxSize(),
                     topBar = {
                         TopBar(screenName, navController::navigateUp)
@@ -86,10 +126,33 @@ class MainActivity : ComponentActivity() {
                     }
                 ) { innerPadding ->
                         Box(modifier = Modifier.padding(innerPadding)) {
-                            Homebrewery(navController)
+                            Homebrewery(navController, hbfVM, roomVM, imageLoader)
                         }
                 }
             }
+        }
+    }
+
+    private fun saveImageToInternalStorage(uri: Uri): File? {
+        try {
+            val inputStream = contentResolver.openInputStream(uri) ?: return null
+
+            // unique name for each character image
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val fileName = "CHAR_IMG_$timeStamp.jpg"
+
+            val destinationFile = File(filesDir, fileName)
+            val outputStream = FileOutputStream(destinationFile)
+            inputStream.use { input ->
+                outputStream.use { output ->
+                    input.copyTo(output)
+                }
+            }
+            return destinationFile
+
+        } catch (e: IOException) {
+            Log.e("SaveImage", "Error saving image", e)
+            return null
         }
     }
 }
@@ -101,7 +164,8 @@ fun TopBar(screenName : String, back : () -> Unit, modifier: Modifier = Modifier
         title = {},
         navigationIcon = {
             Row(
-                modifier = modifier.fillMaxWidth()
+                modifier = modifier
+                    .fillMaxWidth()
                     .height(100.dp)
                     .padding(start = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -188,10 +252,7 @@ fun BottomBar(modifier: Modifier = Modifier, screenName : String, navigate : (ro
 }
 
 @Composable
-fun Homebrewery(navController : NavHostController, modifier: Modifier = Modifier) {
-    val roomVM = RoomVM.getInstance()
-    val hbfVM : HBFViewModel = viewModel()
-
+fun Homebrewery(navController : NavHostController, hbfVM: HBFViewModel, roomVM: RoomVM, imageLoader : (Int) -> Unit, modifier: Modifier = Modifier) {
     NavHost (
         navController = navController,
         startDestination = Screens.CharacterView.name
@@ -207,7 +268,8 @@ fun Homebrewery(navController : NavHostController, modifier: Modifier = Modifier
 
         composable(route = Screens.CharacterCreation.name) {
             // Character Creation
-            CharacterCreationScreen(hbfVM)
+            CharacterCreationScreen(imageLoader = imageLoader,
+                hbfVM = hbfVM)
         }
 
         composable(route = Screens.HomebrewView.name) {
@@ -240,10 +302,10 @@ fun Homebrewery(navController : NavHostController, modifier: Modifier = Modifier
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    DnDHomebrewfestTheme {
-        Homebrewery(rememberNavController())
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun GreetingPreview() {
+//    DnDHomebrewfestTheme {
+//        Homebrewery(rememberNavController())
+//    }
+//}

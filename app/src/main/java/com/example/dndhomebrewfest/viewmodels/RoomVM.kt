@@ -8,6 +8,8 @@ import com.example.dndhomebrewfest.data.DataSource
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.example.dndhomebrewfest.data.Character
+import kotlinx.coroutines.flow.StateFlow
 
 class RoomVM(
     val characterDao: CharacterDao,
@@ -29,6 +31,21 @@ class RoomVM(
 
     val characters = characterDao.getAllCharacters()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+
+    fun updateCharacterImage(charID : Int, imageURI : String) {
+        viewModelScope.launch {
+            characterDao.updateImageUri(charID, imageURI)
+        }
+    }
+
+    fun getCharacter(charID : Int) : StateFlow<Character>? {
+        var character: StateFlow<Character>? = null
+        viewModelScope.launch {
+            character = characterDao.getCharacter(charID).stateIn(viewModelScope, SharingStarted.WhileSubscribed(),
+                Character())
+        }
+        return character
+    }
 
     companion object{
         private var INSTANCE : RoomVM ? = null

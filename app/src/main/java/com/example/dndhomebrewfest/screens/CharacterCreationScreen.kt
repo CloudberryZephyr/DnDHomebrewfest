@@ -1,6 +1,9 @@
 package com.example.dndhomebrewfest.screens
 
+import android.content.Context
+import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,14 +28,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.dndhomebrewfest.HBFUiState
 import com.example.dndhomebrewfest.viewmodels.Class
 import com.example.dndhomebrewfest.viewmodels.DnDViewModel
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
 import com.example.dndhomebrewfest.viewmodels.Race
 import com.example.dndhomebrewfest.viewmodels.Subrace
+import java.io.File
+import java.io.FileInputStream
 import kotlin.random.Random
+
 
 enum class StatMethod{
     STANDARD,
@@ -51,7 +60,7 @@ enum class Step{
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CharacterCreationScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier) {
+fun CharacterCreationScreen(hbfVM : HBFViewModel, imageLoader: (Int) -> Unit, modifier : Modifier = Modifier) {
     val hbfUIState by hbfVM.uiState.collectAsState()
     val dndViewModel : DnDViewModel = viewModel()
     var step : Step by remember{ mutableStateOf<Step>(Step.ONE)}
@@ -92,7 +101,9 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier
 
     if(step == Step.ONE){
         Column(
-            modifier = modifier.fillMaxSize().alpha(if (step == Step.ONE) 1f else 0.5f)
+            modifier = modifier
+                .fillMaxSize()
+                .alpha(if (step == Step.ONE) 1f else 0.5f)
                 .pointerInput(step == Step.ONE) {
                     if (step != Step.ONE) {
                         awaitPointerEventScope {
@@ -163,7 +174,8 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier
 
         if(statMethod == StatMethod.NEITHER) {
             Column(
-                modifier = modifier.fillMaxSize()
+                modifier = modifier
+                    .fillMaxSize()
                     .alpha(if (statMethod == StatMethod.NEITHER) 1f else 0.5f)
                     .pointerInput(statMethod == StatMethod.NEITHER) {
                         if (statMethod != StatMethod.NEITHER) {
@@ -194,7 +206,9 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier
             }
         } else {
             Column(
-                modifier = modifier.fillMaxSize().alpha(if (step == Step.TWO) 1f else 0.5f)
+                modifier = modifier
+                    .fillMaxSize()
+                    .alpha(if (step == Step.TWO) 1f else 0.5f)
                     .pointerInput(step == Step.TWO) {
                         if (step != Step.TWO) {
                             awaitPointerEventScope {
@@ -481,7 +495,9 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier
 
     if(step == Step.THREE){
         Column(
-            modifier = modifier.fillMaxSize().alpha(if (step == Step.THREE) 1f else 0.5f)
+            modifier = modifier
+                .fillMaxSize()
+                .alpha(if (step == Step.THREE) 1f else 0.5f)
                 .pointerInput(step == Step.THREE) {
                     if (step != Step.THREE) {
                         awaitPointerEventScope {
@@ -556,4 +572,35 @@ fun CharacterCreationScreen(hbfVM : HBFViewModel, modifier : Modifier = Modifier
 
     // TODO: Step 6: Misc Choices: Skills, Terrains, Spells; populate character class with info
 
+}
+
+@Composable
+fun CharacterImage(charID : Int, hbfUiState: HBFUiState, context: Context, imageLoader: (Int) -> Unit, modifier : Modifier = Modifier) {
+    val imageName = hbfUiState.current_char_img_name
+
+    Box() {
+        Column() {
+            Button(
+                onClick = {
+                    imageLoader(charID)
+                }
+            ) {
+                Text("Intent Test")
+            }
+
+            if ((imageName == null || imageName == "")) {
+            } else {
+
+                val directory = context.filesDir
+                val file = File(directory, imageName)
+                val bitmap = BitmapFactory.decodeStream(FileInputStream(file))
+                val bitmapPainter = BitmapPainter(bitmap.asImageBitmap())
+
+                Image(
+                    painter = bitmapPainter,
+                    contentDescription = null
+                )
+            }
+        }
+    }
 }
