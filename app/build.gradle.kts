@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.volley)
     implementation(libs.androidx.ui)
+    implementation(libs.androidx.compose.ui.text.google.fonts)
     debugImplementation(libs.androidx.ui.tooling)
 
     // add room library
