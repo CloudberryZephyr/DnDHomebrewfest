@@ -12,6 +12,37 @@ import kotlinx.coroutines.launch
 import com.example.dndhomebrewfest.data.Character
 import kotlinx.coroutines.flow.StateFlow
 
+
+data class CharacterState(
+    var id: String = "",
+    var name: String = "",
+    var characterClass: String = "",
+    var img: String = "",
+    var stats: String = "",
+    var race: String = "",
+    var saves: String = "",
+    var skills: String = "",
+    var equipment: String = "",
+    var features: String = "",
+    var spells: String = ""
+){
+    fun toCharacter() : Character {
+        return Character(
+            character_id = id.toIntOrNull() ?: 1,
+            name = name,
+            character_class = characterClass,
+            char_img_uri = img,
+            character_stats_json = stats,
+            character_race = race,
+            saving_throws_json = saves,
+            skills_json = skills,
+            equipment_json = equipment,
+            features_json = features,
+            spells_json = spells
+        )
+    }
+}
+
 class RoomVM(
     val characterDao: CharacterDao,
 ) : ViewModel() {
@@ -48,8 +79,11 @@ class RoomVM(
     }
 
     fun addCharacter(character: Character){
-        viewModelScope.launch {
-            characterDao.upsertCharacter(character)
+        val id = character.character_id
+        if(id != null) {
+            viewModelScope.launch {
+                characterDao.upsertCharacter(character)
+            }
         }
     }
 

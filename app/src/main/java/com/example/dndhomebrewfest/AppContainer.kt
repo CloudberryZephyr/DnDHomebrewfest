@@ -22,7 +22,7 @@ class DefaultAppContainer(val context: Context) : AppContainer{
     }
 
     override val characterDao: CharacterDao by lazy{
-        db.characterDao
+        db.characterDao()
     }
 
 }

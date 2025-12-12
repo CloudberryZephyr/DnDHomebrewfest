@@ -9,5 +9,5 @@ import androidx.room.RoomDatabase
 )
 
 abstract class Database : RoomDatabase() {
-    abstract val characterDao : CharacterDao
+    abstract fun characterDao() : CharacterDao
 }

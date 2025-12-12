@@ -271,6 +271,7 @@ fun Homebrewery(navController : NavHostController, hbfVM: HBFViewModel, roomVM: 
                 createCharacter = {
                     navController.navigate(Screens.CharacterCreation.name)
                 },
+                hbfVM = hbfVM,
                 navRight = {navController.navigate(Screens.HomebrewView.name)}
             )
         }

@@ -4,9 +4,12 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Button
@@ -28,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.TypeConverter
@@ -67,6 +71,7 @@ fun CharacterCreationScreen(
     modifier: Modifier = Modifier,
     imageLoader: (Int) -> Unit
 ) {
+    var nextId by remember{mutableStateOf<Int>(0)}
     val hbfUIState by hbfVM.uiState.collectAsState()
     val dndViewModel : DnDViewModel = viewModel()
     var step : Step by remember{ mutableStateOf<Step>(Step.ONE)}
@@ -82,6 +87,14 @@ fun CharacterCreationScreen(
     var bgInfo : Background? = null
     var finalSkills by remember{mutableStateOf<MutableList<String>>(mutableListOf())}
 
+    val roomVM = RoomVM.getInstance()
+
+    val characterList by roomVM.characters.collectAsState()
+    for(chara in characterList){
+        if(chara.character_id >= nextId){
+            nextId = chara.character_id + 1
+        }
+    }
 
     // Step 1: Class
     val classes : MutableList<String> = mutableListOf()
@@ -159,13 +172,17 @@ fun CharacterCreationScreen(
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                modifier = modifier.fillMaxSize()
+                modifier = modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                contentPadding = PaddingValues(4.dp)
+
             ) {
                 items(classes.size) { index ->
                     val charClass = classes[index]
                     val isSelected = selectedIndex == index
 
                     Card(
+                        modifier = modifier.height(50.dp).requiredWidth(181.dp),
                         onClick = {
                             selectedIndex = if (selectedIndex == index) null else index
                             Log.i("MYTAG", "selected $charClass")
@@ -213,8 +230,8 @@ fun CharacterCreationScreen(
             ) {
                 Text(
                     "Select the method you wish to use to generate stats. Standard Array gives you" +
-                            "a fixed list of stats, while rolling randomly generates stat values."
-                )
+                            " a fixed list of stats, while rolling randomly generates stat values.",
+                    textAlign = TextAlign.Center)
                 Button(
                     onClick = { statMethod = StatMethod.STANDARD }
                 ) {
@@ -373,7 +390,7 @@ fun CharacterCreationScreen(
                             DropdownMenuItem(
                                 text = { Text(option.toString()) },
                                 onClick = {
-                                    finalStats["Dexterity"] = option
+                                    finalStats["Constitution"] = option
                                     if (chosenCon != null) {
                                         stats.add(chosenCon!!.toInt())
                                     }
@@ -557,13 +574,17 @@ fun CharacterCreationScreen(
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                modifier = modifier.fillMaxSize()
+                modifier = modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                contentPadding = PaddingValues(4.dp)
+
             ) {
                 items(races.size) { index ->
                     val charRace = races[index]
                     val isSelected = selectedIndex == index
 
                     Card(
+                        modifier = modifier.height(50.dp).requiredWidth(181.dp),
                         onClick = {
                             selectedIndex = if (selectedIndex == index) null else index
                             for(r in dndViewModel.raceObjects){
@@ -621,13 +642,17 @@ fun CharacterCreationScreen(
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                modifier = modifier.fillMaxSize()
+                modifier = modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                contentPadding = PaddingValues(4.dp)
+
             ) {
                 items(bgs.size) { index ->
                     val charBg = bgs[index]
                     val isSelected = selectedIndex == index
 
                     Card(
+                        modifier = modifier.height(50.dp).requiredWidth(181.dp),
                         onClick = {
                             selectedIndex = if (selectedIndex == index) null else index
                             finalBg = charBg
@@ -720,13 +745,15 @@ fun CharacterCreationScreen(
     if(step == Step.FINISH){
 
         Column(
-            modifier = modifier.fillMaxSize()
+            modifier = modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ){
             var name by remember {mutableStateOf<String>("")}
             TextField(
                 value = name,
-                onValueChange = {},
-                label = {Text("Enter your name")},
+                onValueChange = {name = it},
+                label = {Text("Enter your character's name")},
                 singleLine = true
             )
             Button(
@@ -813,6 +840,17 @@ fun CharacterCreationScreen(
                         }
                     }
 
+                    val equipment : MutableList<String> = mutableListOf()
+
+                    if(bgInfo != null){
+                        for(s in bgInfo.starting_proficiencies){
+                            finalSkills.add(s.name)
+                        }
+                        for(e in bgInfo.starting_equipment){
+                            equipment.add(e.equipment.name + ": " + e.quantity)
+                        }
+                    }
+
                     if(subraceInfo != null) {
                         for (asi in subraceInfo.ability_bonuses) {
                             if (asi.ability_score.name == "STR") {
@@ -822,12 +860,10 @@ fun CharacterCreationScreen(
                                 finalStats["Dexterity"] = (finalStats["Dexterity"] ?: 0) + asi.bonus
                             }
                             if (asi.ability_score.name == "CON") {
-                                finalStats["Constitution"] =
-                                    (finalStats["Constitution"] ?: 0) + asi.bonus
+                                finalStats["Constitution"] = (finalStats["Constitution"] ?: 0) + asi.bonus
                             }
                             if (asi.ability_score.name == "INT") {
-                                finalStats["Intelligence"] =
-                                    (finalStats["Intelligence"] ?: 0) + asi.bonus
+                                finalStats["Intelligence"] = (finalStats["Intelligence"] ?: 0) + asi.bonus
                             }
                             if (asi.ability_score.name == "WIS") {
                                 finalStats["Wisdom"] = (finalStats["Wisdom"] ?: 0) + asi.bonus
@@ -846,24 +882,28 @@ fun CharacterCreationScreen(
                         }
                     }
 
-                    val roomVM = RoomVM.getInstance()
-                    roomVM.addCharacter(
-                        Character(
-                            character_id = 0,
-                            name = name,
-                            character_class = finalClass,
-                            char_img_uri = "uri go here",  // NEED TO ADD THIS
-                            character_stats_json = fromStringIntMap(finalStats),
-                            character_race = finalRace,
-                            saving_throws_json = fromStringList(savingThrows),
-                            skills_json = fromStringList(finalSkills),
-                            equipment_json = fromStringList(listOf()), // NEED TO ADD THIS
-                            features_json = fromStringStringMap(features),
-                            spells_json = fromStringList(listOf()) // NEED TO ADD THIS
-                        )
-                    )
+                    classInfo?.let {
+                        for(e in it.starting_equipment){
+                            equipment.add(e.equipment.name + ": " + e.quantity)
+                        }
+                    }
 
-                    Log.i("MYTAG", roomVM.characters.value.toString())
+                    val charToAdd = Character(
+                        character_id = nextId,
+                        name = name,
+                        character_class = finalClass,
+                        char_img_uri = "uri go here",  // NEED TO ADD THIS
+                        character_stats_json = fromStringIntMap(finalStats),
+                        character_race = finalRace,
+                        saving_throws_json = fromStringList(savingThrows),
+                        skills_json = fromStringList(finalSkills),
+                        equipment_json = fromStringList(equipment),
+                        features_json = fromStringStringMap(features),
+                        spells_json = fromStringList(listOf()) // NEED TO ADD THIS
+                    )
+                    roomVM.addCharacter(charToAdd)
+
+                    Log.i("MYTAG", charToAdd.toString())
 
                     finish()
                 }
