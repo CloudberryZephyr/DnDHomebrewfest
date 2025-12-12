@@ -242,7 +242,7 @@ fun CharacterCreationScreen(
                 Text(
                     "Select the method you wish to use to generate stats. Standard Array gives you" +
                             " a fixed list of stats, while rolling randomly generates stat values.",
-                    textAlign = TextAlign.Center)
+                    textAlign = TextAlign.Center, color = Color.White)
                 Button(
                     onClick = { statMethod = StatMethod.STANDARD }
                 ) {
@@ -568,7 +568,7 @@ fun CharacterCreationScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Select Your Race!")
+            Text("Select Your Race!", color = Color.White)
 
             var selectedIndex by remember { mutableStateOf<Int?>(null) }
 
@@ -636,7 +636,7 @@ fun CharacterCreationScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Select Your Background!")
+            Text("Select Your Background!", color = Color.White)
 
             var selectedIndex by remember { mutableStateOf<Int?>(null) }
 
