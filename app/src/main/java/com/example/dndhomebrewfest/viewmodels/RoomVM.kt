@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import com.example.dndhomebrewfest.data.Character
+import com.example.dndhomebrewfest.data.Homebrew
+import com.example.dndhomebrewfest.data.HomebrewDao
 import kotlinx.coroutines.flow.StateFlow
 
 
@@ -45,6 +47,7 @@ data class CharacterState(
 
 class RoomVM(
     val characterDao: CharacterDao,
+    val homebrewDao: HomebrewDao
 ) : ViewModel() {
     init {
         // For testing only
@@ -63,6 +66,9 @@ class RoomVM(
     val characters = characterDao.getAllCharacters()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
+    val homebrews = homebrewDao.getAllHomebrews()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+
     fun updateCharacterImage(charID : Int, imageURI : String) {
         viewModelScope.launch {
             characterDao.updateImageUri(charID, imageURI)
@@ -78,6 +84,15 @@ class RoomVM(
         return character
     }
 
+    fun getHomebrew(brewID : Int) : StateFlow<Homebrew>? {
+        var homebrew: StateFlow<Homebrew>? = null
+        viewModelScope.launch{
+            homebrew = homebrewDao.getHomebrew(brewID).stateIn(viewModelScope, SharingStarted.WhileSubscribed(),
+                Homebrew())
+        }
+        return homebrew
+    }
+
     fun addCharacter(character: Character){
         val id = character.character_id
         if(id != null) {
@@ -87,12 +102,22 @@ class RoomVM(
         }
     }
 
+    fun addHomebrew(homebrew: Homebrew){
+        val id = homebrew.homebrewId
+        if(id != null) {
+            viewModelScope.launch{
+                homebrewDao.upsertHomebrew(homebrew)
+            }
+        }
+    }
+
     companion object{
         private var INSTANCE : RoomVM ? = null
 
         fun getInstance() : RoomVM {
             val vm = INSTANCE ?: synchronized(this){
-                RoomVM(HomebreweryApp.Companion.getApp().container.characterDao).also {
+                RoomVM(HomebreweryApp.Companion.getApp().container.characterDao,
+                    HomebreweryApp.Companion.getApp().container.homebrewDao).also {
                     INSTANCE = it
                 }
             }

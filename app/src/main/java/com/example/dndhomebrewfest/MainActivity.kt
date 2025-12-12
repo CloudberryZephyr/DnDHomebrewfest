@@ -49,6 +49,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.dndhomebrewfest.screens.CharacterCreationScreen
 import com.example.dndhomebrewfest.screens.CharacterViewScreen
+import com.example.dndhomebrewfest.screens.HomebrewCreationScreen
 import com.example.dndhomebrewfest.screens.HomebrewViewScreen
 import com.example.dndhomebrewfest.screens.StandardSearchScreen
 import com.example.dndhomebrewfest.screens.StandardViewScreen
@@ -290,6 +291,7 @@ fun Homebrewery(navController : NavHostController, hbfVM: HBFViewModel, roomVM: 
                 createHomebrew = {
                     navController.navigate(Screens.HomebrewCreation.name)
                 },
+                hbfVM = hbfVM,
                 navRight = {navController.navigate(Screens.StandardSearch.name)},
                 navLeft = {
                     hbfVM.setType("")
@@ -300,6 +302,10 @@ fun Homebrewery(navController : NavHostController, hbfVM: HBFViewModel, roomVM: 
 
         composable(route = Screens.HomebrewCreation.name) {
             // Homebrew Creation
+            HomebrewCreationScreen(
+                hbfVM = hbfVM,
+                finish = {navController.navigateUp()}
+            )
         }
 
         composable(route = Screens.StandardView.name) {

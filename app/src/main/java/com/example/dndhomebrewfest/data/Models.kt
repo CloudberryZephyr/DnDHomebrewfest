@@ -19,3 +19,12 @@ data class Character(
     var features_json : String = "",
     var spells_json : String = ""
 )
+
+@Entity(tableName = "homebrew")
+data class Homebrew(
+    @PrimaryKey
+    var homebrewId : Int = 1,
+    var name : String = "",
+    var category : String = "",
+    var description : String = ""
+)

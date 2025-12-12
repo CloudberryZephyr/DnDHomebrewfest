@@ -24,3 +24,15 @@ interface CharacterDao {
     @Query("SELECT * FROM character WHERE character_id = :charID")
     fun getCharacter(charID : Int) : Flow<Character>
 }
+
+@Dao
+interface HomebrewDao {
+    @Upsert
+    suspend fun upsertHomebrew(homebrew: Homebrew)
+
+    @Query("SELECT * FROM homebrew")
+    fun getAllHomebrews() : Flow<List<Homebrew>>
+
+    @Query("SELECT * FROM homebrew WHERE homebrewId = :brewID")
+    fun getHomebrew(brewID : Int) : Flow<Homebrew>
+}

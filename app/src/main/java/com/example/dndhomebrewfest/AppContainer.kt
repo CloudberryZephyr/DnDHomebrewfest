@@ -4,9 +4,11 @@ import android.content.Context
 import androidx.room.Room
 import com.example.dndhomebrewfest.data.Database
 import com.example.dndhomebrewfest.data.CharacterDao
+import com.example.dndhomebrewfest.data.HomebrewDao
 
 interface AppContainer {
     val characterDao : CharacterDao
+    val homebrewDao : HomebrewDao
 }
 
 class DefaultAppContainer(val context: Context) : AppContainer{
@@ -23,6 +25,10 @@ class DefaultAppContainer(val context: Context) : AppContainer{
 
     override val characterDao: CharacterDao by lazy{
         db.characterDao()
+    }
+
+    override val homebrewDao : HomebrewDao by lazy{
+        db.homebrewDao()
     }
 
 }
