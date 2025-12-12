@@ -117,8 +117,6 @@ private val pickImageLauncher = registerForActivityResult(ActivityResultContract
                 val backStackEntry by navController.currentBackStackEntryAsState()
                 val screenName = backStackEntry?.destination?.route ?: ""
 
-//                roomVM.deleteCharacters()
-
             Scaffold(modifier = Modifier.fillMaxSize(),
                     topBar = {
                         TopBar(screenName, navController::navigateUp)
