@@ -280,6 +280,7 @@ fun Homebrewery(navController : NavHostController, hbfVM: HBFViewModel, roomVM: 
             CharacterCreationScreen(
                 imageLoader = imageLoader,
                 hbfVM = hbfVM,
+                finish = {navController.navigateUp()}
             )
         }
 

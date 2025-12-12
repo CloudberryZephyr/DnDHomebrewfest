@@ -1,5 +1,6 @@
 package com.example.dndhomebrewfest.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dndhomebrewfest.HomebreweryApp
@@ -15,8 +16,6 @@ class RoomVM(
     val characterDao: CharacterDao,
 ) : ViewModel() {
     init {
-
-
         // For testing only
         importDataToCharacterTable()
     }
@@ -25,6 +24,7 @@ class RoomVM(
         viewModelScope.launch {
             DataSource.listOfCharacters.forEach{ character ->
                 characterDao.upsertCharacter(character)
+                Log.i("MYTAG", "Upserted $character")
             }
         }
     }
@@ -45,6 +45,12 @@ class RoomVM(
                 Character())
         }
         return character
+    }
+
+    fun addCharacter(character: Character){
+        viewModelScope.launch {
+            characterDao.upsertCharacter(character)
+        }
     }
 
     companion object{
