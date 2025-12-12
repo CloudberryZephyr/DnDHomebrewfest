@@ -1,6 +1,9 @@
 package com.example.dndhomebrewfest.screens
 
+import android.content.Context
+import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.Button
@@ -30,11 +34,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.TypeConverter
+import com.example.dndhomebrewfest.HBFUiState
 import com.example.dndhomebrewfest.data.Character
 import com.example.dndhomebrewfest.viewmodels.Background
 import com.example.dndhomebrewfest.viewmodels.Class
@@ -44,6 +53,8 @@ import com.example.dndhomebrewfest.viewmodels.Race
 import com.example.dndhomebrewfest.viewmodels.RoomVM
 import com.example.dndhomebrewfest.viewmodels.Subrace
 import kotlinx.serialization.json.Json
+import java.io.File
+import java.io.FileInputStream
 import kotlin.random.Random
 
 enum class StatMethod{
@@ -69,7 +80,7 @@ fun CharacterCreationScreen(
     hbfVM: HBFViewModel,
     finish: () -> Unit,
     modifier: Modifier = Modifier,
-    imageLoader: (Int) -> Unit
+    imageLoader: () -> Unit
 ) {
     var nextId by remember{mutableStateOf<Int>(0)}
     val hbfUIState by hbfVM.uiState.collectAsState()
@@ -154,7 +165,7 @@ fun CharacterCreationScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Select Your Class!")
+            Text("Select Your Class!", color = Color.White)
 
             var selectedIndex by remember { mutableStateOf<Int?>(null) }
 
@@ -750,6 +761,11 @@ fun CharacterCreationScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ){
             var name by remember {mutableStateOf<String>("")}
+
+            Box(modifier.size(300.dp)) {
+                CharacterImage(nextId, hbfUIState, LocalContext.current, imageLoader)
+            }
+
             TextField(
                 value = name,
                 onValueChange = {name = it},
@@ -888,11 +904,13 @@ fun CharacterCreationScreen(
                         }
                     }
 
+                    val uri = hbfUIState.current_char_img_name
+
                     val charToAdd = Character(
                         character_id = nextId,
                         name = name,
                         character_class = finalClass,
-                        char_img_uri = "uri go here",  // NEED TO ADD THIS
+                        char_img_uri =  uri,
                         character_stats_json = fromStringIntMap(finalStats),
                         character_race = finalRace,
                         saving_throws_json = fromStringList(savingThrows),
@@ -927,4 +945,35 @@ fun fromStringStringMap(value: Map<String, String>) : String {
 @TypeConverter
 fun fromStringIntMap(value: Map<String, Int>) : String {
     return Json.encodeToString(value)
+}
+
+@Composable
+fun CharacterImage(charID : Int, hbfUiState: HBFUiState, context: Context, imageLoader: () -> Unit, modifier : Modifier = Modifier) {
+    val imageName = hbfUiState.current_char_img_name
+
+    Box() {
+        Column() {
+            Button(
+                onClick = {
+                    imageLoader()
+                }
+            ) {
+                Text("Add Art")
+            }
+
+            if ((imageName == null || imageName == "")) {
+            } else {
+
+                val directory = context.filesDir
+                val file = File(directory, imageName)
+                val bitmap = BitmapFactory.decodeStream(FileInputStream(file))
+                val bitmapPainter = BitmapPainter(bitmap.asImageBitmap())
+
+                Image(
+                    painter = bitmapPainter,
+                    contentDescription = null
+                )
+            }
+        }
+    }
 }

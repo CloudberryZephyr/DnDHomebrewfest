@@ -10,6 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -32,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +44,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -56,6 +59,7 @@ import com.example.dndhomebrewfest.screens.StandardViewScreen
 import com.example.dndhomebrewfest.ui.theme.DnDHomebrewfestTheme
 import com.example.dndhomebrewfest.viewmodels.HBFViewModel
 import com.example.dndhomebrewfest.viewmodels.RoomVM
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -77,33 +81,25 @@ class MainActivity : ComponentActivity() {
     val roomVM = RoomVM.getInstance()
     val hbfVM : HBFViewModel by viewModels()
 
-    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
         if (result.resultCode == RESULT_OK) {
             val intent = result.data
             val imageUri = intent?.data
-            val charID = currentCharIdToUpdate
 
-            if (imageUri != null && charID != null) {
+            if (imageUri != null) {
                 val savedFile = saveImageToInternalStorage(imageUri)
                 if (savedFile != null) {
                     val savedFileName = savedFile.name
-                    roomVM.updateCharacterImage(charID, savedFileName)
                     hbfVM.onImageChange(savedFileName)
-                    Log.d("MyTAG", "File saved to char $charID")
                 } else {
                     Log.e("MyTAG", "Image saving error")
                     Toast.makeText(this, "Failed to save image", Toast.LENGTH_SHORT).show()
                 }
             }
-            currentCharIdToUpdate = null
-
-        } else {
-            currentCharIdToUpdate = null
         }
     }
 
-    val imageLoader : (Int) -> Unit = { charIndex : Int ->
-        currentCharIdToUpdate = charIndex
+    val imageLoader : () -> Unit = {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "image/*"
@@ -121,8 +117,9 @@ class MainActivity : ComponentActivity() {
                 val backStackEntry by navController.currentBackStackEntryAsState()
                 val screenName = backStackEntry?.destination?.route ?: ""
 
+//                roomVM.deleteCharacters()
 
-                Scaffold(modifier = Modifier.fillMaxSize(),
+            Scaffold(modifier = Modifier.fillMaxSize(),
                     topBar = {
                         TopBar(screenName, navController::navigateUp)
                     },
@@ -130,6 +127,7 @@ class MainActivity : ComponentActivity() {
                         BottomBar(screenName = screenName, navigate = navController::navigate)
                     }
                 ) { innerPadding ->
+
                         Box(modifier = Modifier.padding(innerPadding)
                             .paint(
                                 painter = painterResource(R.drawable.background),
@@ -262,7 +260,8 @@ fun BottomBar(modifier: Modifier = Modifier, screenName : String, navigate : (ro
 }
 
 @Composable
-fun Homebrewery(navController : NavHostController, hbfVM: HBFViewModel, roomVM: RoomVM, imageLoader : (Int) -> Unit, modifier: Modifier = Modifier) {
+fun Homebrewery(navController : NavHostController, hbfVM: HBFViewModel, roomVM: RoomVM, imageLoader : () -> Unit, modifier: Modifier = Modifier) {
+
     NavHost (
         navController = navController,
         startDestination = Screens.CharacterView.name

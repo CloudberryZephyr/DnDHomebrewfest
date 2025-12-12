@@ -15,6 +15,9 @@ interface CharacterDao {
     @Delete
     suspend fun deleteCharacter(character: Character)
 
+    @Query("DELETE FROM character") // "characters" should be your table name
+    suspend fun deleteAllCharacters()
+
     @Query("SELECT * FROM character")
     fun getAllCharacters() : Flow<List<Character>>
 

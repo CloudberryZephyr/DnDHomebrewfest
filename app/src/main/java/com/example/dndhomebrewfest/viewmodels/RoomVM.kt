@@ -63,6 +63,12 @@ class RoomVM(
         }
     }
 
+    fun deleteCharacters() {
+        viewModelScope.launch {
+            characterDao.deleteAllCharacters()
+        }
+    }
+
     val characters = characterDao.getAllCharacters()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
